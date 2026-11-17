@@ -343,9 +343,11 @@ export function getCreatorProducts(): Product[] {
   try {
     const creatorProjsRaw = localStorage.getItem('pojokpixel:creator_projects')
     const userCatRaw = localStorage.getItem('pojokpixel:user_catalog')
+    const serverProductsRaw = localStorage.getItem('pojokpixel:server_creator_products')
 
     const creatorProjs = creatorProjsRaw ? JSON.parse(creatorProjsRaw) : []
     const userCat = userCatRaw ? JSON.parse(userCatRaw) : []
+    const serverProducts = serverProductsRaw ? JSON.parse(serverProductsRaw) : []
 
     const map = new Map<string, Product>()
 
@@ -405,6 +407,36 @@ export function getCreatorProducts(): Product[] {
           accessUrl: cp.accessUrl,
           buyerNote: cp.buyerNote,
           videoUrl: cp.videoUrl,
+        })
+      }
+    }
+
+    // Server listings are canonical and override any stale browser cache.
+    if (Array.isArray(serverProducts)) {
+      for (const product of serverProducts) {
+        if (!product || !product.id || !product.name) continue
+        map.set(String(product.id), {
+          id: String(product.id),
+          name: String(product.name),
+          category: product.category || 'Template Website',
+          price: Number(product.price) || 0,
+          originalPrice: Number(product.originalPrice) || Number(product.price) || 0,
+          label: product.label || 'Kreator',
+          bg: 'nara',
+          img: product.img || 'photo-1460925895917-afdab827c52f',
+          galleryImages: Array.isArray(product.galleryImages) ? product.galleryImages : [],
+          tag: product.tag || 'Rilisan Kreator',
+          rating: Number(product.rating) || 5,
+          reviewsCount: 1,
+          salesCount: Number(product.salesCount) || 0,
+          shortDesc: product.shortDesc || 'Project digital resmi buatan kreator terverifikasi PojokPixel.',
+          formats: Array.isArray(product.formats) && product.formats.length ? product.formats : ['File Digital Siap Pakai'],
+          includes: ['File Digital Asli', 'Lisensi Komersial Kreator', 'Update Gratis Selamanya'],
+          deliveryType: product.deliveryType || 'file',
+          fileAttachment: product.fileAttachment,
+          accessUrl: product.accessUrl,
+          buyerNote: product.buyerNote,
+          videoUrl: product.videoUrl,
         })
       }
     }

@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { rupiah, getProductImageUrl } from '../data/marketplace'
 import type { Product } from '../data/marketplace'
+import { authClient } from '../lib/auth-client'
+import { deleteCreatorData, getCreatorData, saveCreatorData } from '../lib/creator-api'
 
 interface CreatorProfile {
   name: string
@@ -104,24 +106,12 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
   usePageMeta('Area Kreator', 'Daftar menjadi kreator digital PojokPixel dan mulai jual karyamu kepada ribuan kreator Indonesia.')
 
   // Check if user already registered as creator
-  const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(() => {
-    try {
-      const saved = localStorage.getItem('pojokpixel:creator')
-      return saved ? JSON.parse(saved) : null
-    } catch {
-      return null
-    }
-  })
+  const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null)
 
   // Creator's published projects
-  const [myProjects, setMyProjects] = useState<CustomProject[]>(() => {
-    try {
-      const saved = localStorage.getItem('pojokpixel:creator_projects')
-      return saved ? JSON.parse(saved) : []
-    } catch {
-      return []
-    }
-  })
+  const [myProjects, setMyProjects] = useState<CustomProject[]>([])
+  const [isSyncing, setIsSyncing] = useState(true)
+  const { data: session, isPending: isSessionPending } = authClient.useSession()
 
   // Mode for non-creators: 'locked' (explanation of exclusive creator area) or 'form' (the registration form)
   const [nonCreatorView, setNonCreatorView] = useState<'locked' | 'form'>('locked')
@@ -176,34 +166,61 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
     window.dispatchEvent(new CustomEvent('pojokpixel:catalog_updated'))
   }, [])
 
-  // Keep state synchronized if another tab or external action updates creator status
+  // Server data is canonical; migrate matching legacy browser data on first login.
   useEffect(() => {
-    const handleSync = () => {
+    if (isSessionPending) return
+    if (!session) {
+      setCreatorProfile(null)
+      setMyProjects([])
+      setIsSyncing(false)
+      return
+    }
+    let cancelled = false
+    setIsSyncing(true)
+    const sync = async () => {
       try {
-        const saved = localStorage.getItem('pojokpixel:creator')
-        setCreatorProfile(saved ? JSON.parse(saved) : null)
+        let data = await getCreatorData()
+        if (!data) {
+          const legacyProfile = JSON.parse(localStorage.getItem('pojokpixel:creator') || 'null') as CreatorProfile | null
+          const legacyProjects = JSON.parse(localStorage.getItem('pojokpixel:creator_projects') || '[]') as CustomProject[]
+          if (legacyProfile && legacyProfile.email?.toLowerCase() === session.user.email.toLowerCase()) {
+            data = await saveCreatorData({ profile: legacyProfile as unknown as Record<string, unknown>, projects: legacyProjects as unknown as Record<string, unknown>[] })
+          }
+        }
+        if (cancelled) return
+        setCreatorProfile((data?.profile as CreatorProfile | undefined) ?? null)
+        setMyProjects((data?.projects ?? []) as unknown as CustomProject[])
+        if (data) {
+          localStorage.setItem('pojokpixel:creator', JSON.stringify(data.profile))
+          localStorage.setItem('pojokpixel:creator_projects', JSON.stringify(data.projects))
+          localStorage.removeItem('pojokpixel:user_catalog')
+          window.dispatchEvent(new CustomEvent('pojokpixel:creator_updated'))
+          window.dispatchEvent(new CustomEvent('pojokpixel:catalog_updated'))
+        }
       } catch {
-        setCreatorProfile(null)
+        if (!cancelled) notify('Data kreator belum dapat disinkronkan. Periksa koneksi lalu muat ulang halaman.')
+      } finally {
+        if (!cancelled) setIsSyncing(false)
       }
     }
-    window.addEventListener('pojokpixel:creator_updated', handleSync)
-    window.addEventListener('storage', handleSync)
-    return () => {
-      window.removeEventListener('pojokpixel:creator_updated', handleSync)
-      window.removeEventListener('storage', handleSync)
-    }
-  }, [])
+    void sync()
+    return () => { cancelled = true }
+  }, [session?.user.id, isSessionPending])
 
   // Handle Creator Registration Submit
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!regAgreed) {
       alert('Harap setujui syarat & ketentuan kreator terlebih dahulu.')
       return
     }
 
+    if (!session) {
+      notify('Masuk ke akun PojokPixel terlebih dahulu untuk mendaftar sebagai kreator.')
+      return
+    }
     setRegSubmitting(true)
-    setTimeout(() => {
+    try {
       const newProfile: CreatorProfile = {
         name: regName.trim(),
         username: regUsername.trim().replace(/^@/, ''),
@@ -215,13 +232,19 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
         registeredAt: new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }),
       }
 
-      localStorage.setItem('pojokpixel:creator', JSON.stringify(newProfile))
-      setCreatorProfile(newProfile)
+      const saved = await saveCreatorData({ profile: newProfile as unknown as Record<string, unknown>, projects: [] })
+      localStorage.setItem('pojokpixel:creator', JSON.stringify(saved.profile))
+      localStorage.setItem('pojokpixel:creator_projects', '[]')
+      localStorage.removeItem('pojokpixel:user_catalog')
+      setCreatorProfile(saved.profile as unknown as CreatorProfile)
       window.dispatchEvent(new CustomEvent('pojokpixel:creator_updated'))
-      setRegSubmitting(false)
       playSound('success')
       notify('🎉 Selamat! Akun Anda resmi menjadi Akun Kreator PojokPixel.')
-    }, 600)
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'Pendaftaran gagal disinkronkan.')
+    } finally {
+      setRegSubmitting(false)
+    }
   }
 
   // Open modal in CREATE mode
@@ -371,9 +394,13 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
   }
 
   // Handle Save Project (Create or Update existing)
-  const handleSaveProject = (e: React.FormEvent) => {
+  const handleSaveProject = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!projName.trim()) return
+    if (!creatorProfile || !session || isSyncing) {
+      notify('Pastikan akun kreator sudah tersinkron sebelum menyimpan produk.')
+      return
+    }
 
     const priceNum = Math.max(0, parseInt(projPrice, 10) || 0)
     const originalPriceNum = Math.max(0, parseInt(projOriginalPrice, 10) || 0)
@@ -405,10 +432,16 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
       })
 
       try {
+        await saveCreatorData({ profile: creatorProfile as unknown as Record<string, unknown>, projects: updated as unknown as Record<string, unknown>[] })
+      } catch (error) {
+        notify(error instanceof Error ? error.message : 'Produk gagal disinkronkan.')
+        return
+      }
+
+      try {
         localStorage.setItem('pojokpixel:creator_projects', JSON.stringify(updated))
       } catch {
-        notify('Penyimpanan browser penuh. Kurangi gambar galeri atau unggah gambar yang lebih kecil.')
-        return
+        // The server has saved the canonical data; local browser cache is optional.
       }
       setMyProjects(updated)
 
@@ -478,10 +511,15 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
 
       const updated = [newProject, ...myProjects]
       try {
+        await saveCreatorData({ profile: creatorProfile as unknown as Record<string, unknown>, projects: updated as unknown as Record<string, unknown>[] })
+      } catch (error) {
+        notify(error instanceof Error ? error.message : 'Produk gagal disinkronkan.')
+        return
+      }
+      try {
         localStorage.setItem('pojokpixel:creator_projects', JSON.stringify(updated))
       } catch {
-        notify('Penyimpanan browser penuh. Kurangi gambar galeri atau unggah gambar yang lebih kecil.')
-        return
+        // The server has saved the canonical data; local browser cache is optional.
       }
       setMyProjects(updated)
 
@@ -527,9 +565,16 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
   }
 
   // Delete project from both creator projects and visitor catalog
-  const handleDeleteProject = (id: string, name: string) => {
+  const handleDeleteProject = async (id: string, name: string) => {
     if (!confirm(`Hapus project "${name}" dari lapak dan katalog?`)) return
+    if (!creatorProfile) return
     const updated = myProjects.filter((p) => p.id !== id)
+    try {
+      await saveCreatorData({ profile: creatorProfile as unknown as Record<string, unknown>, projects: updated as unknown as Record<string, unknown>[] })
+    } catch (error) {
+      notify(error instanceof Error ? error.message : 'Produk gagal dihapus dari server.')
+      return
+    }
     setMyProjects(updated)
     localStorage.setItem('pojokpixel:creator_projects', JSON.stringify(updated))
 
@@ -549,12 +594,17 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
   // Reset creator status to test non-creator / buyer mode
   const handleResetToBuyer = () => {
     if (!confirm('Uji coba Akun Pembeli: Status kreator akan dinonaktifkan sementara agar Anda dapat melihat tampilan pembeli biasa. Lanjutkan?')) return
-    localStorage.removeItem('pojokpixel:creator')
-    setCreatorProfile(null)
-    setNonCreatorView('locked')
-    window.dispatchEvent(new CustomEvent('pojokpixel:creator_updated'))
-    playSound('pop')
-    notify('Akun dikembalikan ke Akun Pembeli biasa.')
+    void deleteCreatorData().then(() => {
+      localStorage.removeItem('pojokpixel:creator')
+      localStorage.removeItem('pojokpixel:creator_projects')
+      setCreatorProfile(null)
+      setMyProjects([])
+      setNonCreatorView('locked')
+      window.dispatchEvent(new CustomEvent('pojokpixel:creator_updated'))
+      window.dispatchEvent(new CustomEvent('pojokpixel:catalog_updated'))
+      playSound('pop')
+      notify('Akun dikembalikan ke Akun Pembeli biasa.')
+    }).catch((error: unknown) => notify(error instanceof Error ? error.message : 'Gagal mengubah status kreator.'))
   }
 
   return (
@@ -586,7 +636,11 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
             VIEW A: JIKA BUKAN KREATOR (AKUN PEMBELI)
             Halaman kreator / dashboard tidak muncul jika akunnya bukan kreator
            ========================================================================== */}
-        {!creatorProfile ? (
+        {isSyncing ? (
+          <div className="creator-guard-container" role="status" aria-live="polite">
+            <div className="creator-guard-card"><p className="creator-guard-lead">Memuat data kreator dari akunmu…</p></div>
+          </div>
+        ) : !creatorProfile ? (
           nonCreatorView === 'locked' ? (
             /* GATEWAY / AKSES TERKUNCI */
             <div className="creator-guard-container">

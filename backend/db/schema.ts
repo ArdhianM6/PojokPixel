@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, integer, boolean, date, index } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, uuid, integer, boolean, date, index, jsonb } from 'drizzle-orm/pg-core'
 
 export const products = pgTable('products', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -17,6 +17,13 @@ export const teamMembers = pgTable('team_members', {
   name: text('name').notNull(),
   role: text('role').notNull().default('404 Not Found'),
   sortOrder: integer('sort_order').notNull(),
+})
+
+export const creatorData = pgTable('creator_data', {
+  userId: text('user_id').primaryKey().references(() => user.id, { onDelete: 'cascade' }),
+  profile: jsonb('profile').notNull(),
+  projects: jsonb('projects').notNull().default([]),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
 export const user = pgTable('user', {

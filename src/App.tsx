@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import AuthPages, { AuthDialog } from './AuthPages'
 import { authClient } from './lib/auth-client'
+import { getCreatorData, getPublicCreatorProducts } from './lib/creator-api'
 import { SkipToContent } from './components/SkipToContent'
 import ProductDetailPage from './components/ProductDetailPage'
 import { Analytics } from './components/Analytics'
@@ -219,6 +220,30 @@ function Storefront() {
 
   const profileMenu = useRef<HTMLDivElement>(null)
   const { data: session, isPending } = authClient.useSession()
+
+  useEffect(() => {
+    let cancelled = false
+    if (isPending) return
+    if (!session) {
+      setIsCreator(false)
+      return
+    }
+    void getCreatorData().then((data) => {
+      if (!cancelled) setIsCreator(Boolean(data?.profile))
+    }).catch(() => undefined)
+    return () => { cancelled = true }
+  }, [session?.user.id, isPending])
+
+  useEffect(() => {
+    let cancelled = false
+    void getPublicCreatorProducts().then((projects) => {
+      if (cancelled) return
+      localStorage.removeItem('pojokpixel:user_catalog')
+      localStorage.setItem('pojokpixel:server_creator_products', JSON.stringify(projects))
+      window.dispatchEvent(new CustomEvent('pojokpixel:catalog_updated'))
+    }).catch(() => undefined)
+    return () => { cancelled = true }
+  }, [])
 
   // Web Audio Retro Synthesizer
   const playSound = useCallback((type: 'click' | 'pop' | 'success' | 'delete') => {

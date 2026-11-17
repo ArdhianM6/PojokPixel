@@ -47,6 +47,12 @@ Gunakan kredensial produksi dari provider masing-masing; jangan gunakan kunci uj
 
 Ganti contoh domain tersebut dengan domain akhir sebelum membuat Turnstile widget dan OAuth credentials. Better Auth dan CORS menolak origin yang belum dikonfigurasi saat backend berjalan dengan `NODE_ENV=production`.
 
+### Sinkronisasi akun kreator
+
+Profil kreator dan produk tersimpan pada PostgreSQL milik API, terhubung ke ID akun Better Auth. Setelah merilis pembaruan backend, jalankan `npm.cmd run db:migrate` terhadap `DATABASE_URL` production (atau jalankan perintah migrasi yang sama pada job deploy backend) sebelum pengguna membuka dashboard. Pastikan deployment Vercel frontend menggunakan `VITE_API_URL` yang menunjuk ke API tersebut.
+
+Pada kunjungan pertama setelah pembaruan, browser yang masih memiliki profil kreator lama pada origin yang sama akan mengirimkannya ke server jika email profil cocok dengan email akun yang sedang masuk. Data yang tersimpan pada origin localhost tidak dapat dibaca oleh domain Vercel karena penyimpanan browser terpisah; data tersebut perlu dipindahkan secara manual sebelum origin lama tidak tersedia lagi.
+
 Endpoint awal: `GET /api/health`, `GET /api/products`, dan `GET /api/team`.
 
 ## Tim Pojok Pixel
