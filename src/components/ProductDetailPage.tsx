@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getLiveProducts, rupiah, getProductImageUrl } from '../data/marketplace'
 import type { Product } from '../data/marketplace'
+import { authClient } from '../lib/auth-client'
 
 export { getLiveProducts }
 
@@ -68,6 +69,7 @@ function StarRating({ rating, count }: { rating: number; count: number }) {
 }
 
 export default function ProductDetailPage() {
+  const { data: session, isPending } = authClient.useSession()
   const pathId = window.location.pathname.split('/produk/')[1]?.split('/')[0] ?? ''
   const liveList = getLiveProducts()
   const product = liveList.find((item) => item.id === decodeURIComponent(pathId))
@@ -115,6 +117,12 @@ export default function ProductDetailPage() {
   const videoPreview = getVideoPreview(product.videoUrl)
 
   const handleAddToCart = () => {
+    if (isPending) return
+    if (!session?.user) {
+      window.alert('Masuk ke akun PojokPixel terlebih dahulu untuk menambahkan produk ke keranjang.')
+      window.location.assign('/login')
+      return
+    }
     setAdded(true)
     window.setTimeout(() => setAdded(false), 2000)
     try {

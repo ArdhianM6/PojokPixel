@@ -167,7 +167,10 @@ function Storefront() {
   const [couponApplied, setCouponApplied] = useState(false)
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
-  const [checkoutStep, setCheckoutStep] = useState<'method' | 'processing' | 'success'>('method')
+  const [checkoutStep, setCheckoutStep] = useState<'method' | 'qris' | 'processing' | 'success' | 'expired'>('method')
+  const [qrisSecondsLeft, setQrisSecondsLeft] = useState(300)
+  const [activeOrderId, setActiveOrderId] = useState<string | null>(null)
+  const [qrisExpiresAt, setQrisExpiresAt] = useState<number | null>(null)
   const [lastPurchasedProducts, setLastPurchasedProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem('pojokpixel:last_purchase')
@@ -287,6 +290,25 @@ function Storefront() {
     } catch { /* noop */ }
   }, [cartItems])
 
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('pojokpixel:orders') || '[]') as OrderRecord[]
+      const now = Date.now()
+      let changed = false
+      const normalized = stored.map((order) => {
+        if (order.status === 'pending' && order.expiresAt && order.expiresAt <= now) {
+          changed = true
+          return { ...order, status: 'cancelled' as const }
+        }
+        return order
+      })
+      if (changed) {
+        localStorage.setItem('pojokpixel:orders', JSON.stringify(normalized))
+        window.dispatchEvent(new CustomEvent('pojokpixel:orders_updated'))
+      }
+    } catch { /* ignore unavailable local storage */ }
+  }, [])
+
   const toggleSound = () => {
     const next = !soundEnabled
     setSoundEnabled(next)
@@ -317,6 +339,15 @@ function Storefront() {
   const finalTotal = useMemo(() => Math.max(0, cartSubtotal - discountAmount), [cartSubtotal, discountAmount])
 
   const addToCart = (product: Product) => {
+    if (isPending) {
+      notify('Sesi akun sedang diperiksa. Coba lagi sebentar.')
+      return
+    }
+    if (!session?.user) {
+      setAuthDialogMode('login')
+      notify('Masuk ke akun terlebih dahulu untuk menambahkan produk ke keranjang.')
+      return
+    }
     playSound('pop')
     setCartItems((prev) => {
       const idx = prev.findIndex((item) => item.product.id === product.id)
@@ -375,6 +406,16 @@ function Storefront() {
 
   // Handle Checkout Simulator
   const handleProceedCheckout = () => {
+    if (isPending) {
+      notify('Sesi akun sedang diperiksa. Coba lagi sebentar.')
+      return
+    }
+    if (!session?.user) {
+      setIsCartOpen(false)
+      setAuthDialogMode('login')
+      notify('Masuk ke akun terlebih dahulu sebelum checkout.')
+      return
+    }
     if (cartItems.length === 0) {
       notify('Keranjangmu masih kosong!')
       return
@@ -385,6 +426,36 @@ function Storefront() {
   }
 
   const handleConfirmPayment = () => {
+    if (!session?.user) {
+      setIsCheckoutOpen(false)
+      setAuthDialogMode('login')
+      notify('Sesi login diperlukan untuk melanjutkan pembayaran.')
+      return
+    }
+    if (paymentMethod === 'qris') {
+      const orderId = `PP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`
+      const expiresAt = Date.now() + 5 * 60 * 1000
+      setActiveOrderId(orderId)
+      setQrisExpiresAt(expiresAt)
+      setQrisSecondsLeft(300)
+      const pendingOrder: OrderRecord = {
+        orderId,
+        date: new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        timestamp: Date.now(),
+        expiresAt,
+        totalAmount: finalTotal,
+        paymentMethod: 'qris',
+        status: 'pending',
+        items: cartItems.map((item) => ({ id: item.product.id, product: item.product, pricePaid: item.product.price })),
+      }
+      try {
+        const orders: OrderRecord[] = JSON.parse(localStorage.getItem('pojokpixel:orders') || '[]')
+        localStorage.setItem('pojokpixel:orders', JSON.stringify([pendingOrder, ...orders]))
+        window.dispatchEvent(new CustomEvent('pojokpixel:orders_updated'))
+      } catch { /* ignore unavailable local storage */ }
+      setCheckoutStep('qris')
+      return
+    }
     playSound('pop')
     setCheckoutStep('processing')
     const productsToDeliver = cartItems.map((item) => item.product)
@@ -394,6 +465,7 @@ function Storefront() {
 
       // Save to persistent Orders History
       const generatedOrderId = `PP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`
+      setActiveOrderId(generatedOrderId)
       const newOrderRecord: OrderRecord = {
         orderId: generatedOrderId,
         date: new Date().toLocaleDateString('id-ID', {
@@ -428,6 +500,48 @@ function Storefront() {
       setCouponCode('')
     }, 1200)
   }
+
+  const finishQrisPayment = () => {
+    if (!activeOrderId || !qrisExpiresAt || Date.now() >= qrisExpiresAt) return
+    const orders: OrderRecord[] = JSON.parse(localStorage.getItem('pojokpixel:orders') || '[]')
+    const updatedOrders = orders.map((order) => order.orderId === activeOrderId ? { ...order, status: 'completed' as const } : order)
+    localStorage.setItem('pojokpixel:orders', JSON.stringify(updatedOrders))
+    window.dispatchEvent(new CustomEvent('pojokpixel:orders_updated'))
+    const productsToDeliver = cartItems.map((item) => item.product)
+    setLastPurchasedProducts(productsToDeliver)
+    localStorage.setItem('pojokpixel:last_purchase', JSON.stringify(productsToDeliver))
+    setCheckoutStep('processing')
+    setQrisExpiresAt(null)
+    window.setTimeout(() => {
+      playSound('success')
+      setCheckoutStep('success')
+      setCartItems([])
+      setCouponApplied(false)
+      setCouponCode('')
+    }, 700)
+  }
+
+  useEffect(() => {
+    if (!activeOrderId || !qrisExpiresAt) return
+    let timer: number | undefined
+    const updateCountdown = () => {
+      const remaining = Math.max(0, Math.ceil((qrisExpiresAt - Date.now()) / 1000))
+      setQrisSecondsLeft(remaining)
+      if (remaining === 0 && activeOrderId) {
+        try {
+          const orders: OrderRecord[] = JSON.parse(localStorage.getItem('pojokpixel:orders') || '[]')
+          localStorage.setItem('pojokpixel:orders', JSON.stringify(orders.map((order) => order.orderId === activeOrderId && order.status === 'pending' ? { ...order, status: 'cancelled' as const } : order)))
+          window.dispatchEvent(new CustomEvent('pojokpixel:orders_updated'))
+        } catch { /* ignore unavailable local storage */ }
+        if (timer) window.clearInterval(timer)
+        setQrisExpiresAt(null)
+        if (isCheckoutOpen && checkoutStep === 'qris') setCheckoutStep('expired')
+      }
+    }
+    updateCountdown()
+    timer = window.setInterval(updateCountdown, 1000)
+    return () => window.clearInterval(timer)
+  }, [checkoutStep, isCheckoutOpen, qrisExpiresAt, activeOrderId])
 
   // Handle genuine file download for purchased products
   const handleDownloadAsset = (p: Product) => {
@@ -1029,12 +1143,34 @@ function Storefront() {
             navigate={navigate}
           />
         ) : currentPath === '/riwayat' ? (
-          <OrdersPage
-            playSound={playSound}
-            navigate={navigate}
-            notify={notify}
-            onDownloadAsset={handleDownloadAsset}
-          />
+          isPending ? (
+            <section className="min-h-[55vh] flex items-center justify-center px-6" aria-live="polite">
+              <p className="text-sm text-stone-500">Memeriksa sesi akun…</p>
+            </section>
+          ) : !session?.user ? (
+            <section className="min-h-[55vh] flex items-center justify-center bg-[#f5f5f2] px-6 py-16">
+              <div className="w-full max-w-md rounded-3xl border border-[#deddd6] bg-white px-8 py-10 text-center shadow-sm">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff1e9] text-[#e65416]" aria-hidden="true">
+                  <Icon name="user" size={25} />
+                </div>
+                <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold text-[#303236]">Masuk untuk melihat riwayat</h1>
+                <p className="mt-2 text-sm leading-6 text-stone-600">Riwayat pembelian dan unduhan hanya tersedia setelah kamu masuk ke akun PojokPixel.</p>
+                <button type="button" className="button button-dark mt-6 w-full justify-center" onClick={() => setAuthDialogMode('login')}>
+                  Masuk ke akun
+                </button>
+                <button type="button" className="mt-3 text-sm font-semibold text-[#e65416] hover:underline" onClick={() => setAuthDialogMode('register')}>
+                  Belum punya akun? Daftar
+                </button>
+              </div>
+            </section>
+          ) : (
+            <OrdersPage
+              playSound={playSound}
+              navigate={navigate}
+              notify={notify}
+              onDownloadAsset={handleDownloadAsset}
+            />
+          )
         ) : currentPath.startsWith('/kreator') ? (
           <CreatorPage
             playSound={playSound}
@@ -1547,12 +1683,44 @@ function Storefront() {
               </div>
             )}
 
+            {checkoutStep === 'qris' && (
+              <div className="text-center">
+                <span className="text-xs font-mono font-bold text-pixel-orange tracking-widest uppercase">SIMULASI QRIS</span>
+                <h3 className="text-xl font-bold font-display mt-1 mb-1" style={{ color: '#303236' }}>Selesaikan pembayaran</h3>
+                <p className="text-sm text-stone-600 mb-3">Pesanan <strong>{activeOrderId}</strong> · Total <strong>{rupiah(finalTotal)}</strong></p>
+                <div className="mx-auto mb-3 rounded-2xl border border-amber-300 bg-amber-50 p-3 text-left text-xs leading-relaxed text-amber-950">
+                  <strong>Mode demo — jangan scan atau transfer.</strong> QR pada gambar milik NEKOMA, SALON &amp; KECANTIKAN, bukan PojokPixel. Gambar sengaja diburamkan dan tidak dapat dipakai membayar.
+                </div>
+                <div className="relative mx-auto mb-3 w-full max-w-[220px] overflow-hidden rounded-xl border border-stone-200 bg-white">
+                  <img src="/demo-qris.jpg" alt="Contoh QRIS demo, bukan untuk pembayaran" className="block aspect-[9/16] w-full object-contain" style={{ filter: 'blur(9px)', pointerEvents: 'none', userSelect: 'none' }} />
+                  <span className="absolute inset-0 flex items-center justify-center bg-white/55 px-6 text-lg font-black tracking-widest text-red-700">DEMO<br/>JANGAN SCAN</span>
+                </div>
+                <div className="mb-4 rounded-xl bg-stone-100 px-4 py-2">
+                  <span className="block text-xs text-stone-600">Pesanan otomatis dibatalkan dalam</span>
+                  <strong className="font-mono text-2xl tabular-nums text-[#303236]">{String(Math.floor(qrisSecondsLeft / 60)).padStart(2, '0')}:{String(qrisSecondsLeft % 60).padStart(2, '0')}</strong>
+                </div>
+                <button type="button" className="button button-dark w-full justify-center" style={{ height: 46 }} onClick={finishQrisPayment}>
+                  Simulasikan pembayaran berhasil <Icon name="check" size={16} />
+                </button>
+                <p className="mt-2 text-[11px] text-stone-500">Tombol ini hanya menguji alur aplikasi, tidak memverifikasi pembayaran nyata.</p>
+              </div>
+            )}
+
+            {checkoutStep === 'expired' && (
+              <div className="py-8 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-2xl text-red-700">×</div>
+                <h3 className="text-xl font-bold font-display text-[#303236]">Waktu pembayaran habis</h3>
+                <p className="mt-2 text-sm text-stone-600">Pesanan <strong>{activeOrderId}</strong> sudah dibatalkan otomatis. Silakan buat checkout baru untuk mencoba lagi.</p>
+                <button type="button" className="button button-dark mt-5 w-full justify-center" onClick={() => { setIsCheckoutOpen(false); setCheckoutStep('method') }}>Kembali ke keranjang</button>
+              </div>
+            )}
+
             {checkoutStep === 'success' && (
               <div className="checkout-success-view">
                 <div className="checkout-success-icon-badge">✓</div>
-                <h3 className="checkout-success-title">Pembayaran Berhasil!</h3>
+                <h3 className="checkout-success-title">{paymentMethod === 'qris' ? 'Simulasi Pembayaran Berhasil' : 'Pembayaran Berhasil!'}</h3>
                 <span className="checkout-order-number">
-                  No. Pesanan: #PP-2026-9842 • Status: Lunas Terverifikasi
+                  No. Pesanan: #{activeOrderId || 'PP'} • Status: {paymentMethod === 'qris' ? 'Simulasi Selesai' : 'Lunas'}
                 </span>
                 <p className="checkout-success-desc">
                   Terima kasih sudah berbelanja di PojokPixel! Seluruh berkas digital pesananmu telah disiapkan di bawah ini dan dapat langsung kamu unduh sekarang juga:

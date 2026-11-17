@@ -1,6 +1,6 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent, ReactNode } from 'react'
-import { authClient } from './lib/auth-client'
+import { apiBaseUrl, authClient } from './lib/auth-client'
 import './auth.css'
 import './auth-toast.css'
 
@@ -17,6 +17,17 @@ const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | und
 const home = () => window.location.assign('/')
 const continueTo = () => window.location.assign('/auth/continue?login=1')
 const today = new Date().toISOString().slice(0, 10)
+
+function registrationErrorMessage(error: { message?: string; code?: string; status?: number }) {
+  const code = error.code?.toUpperCase() || ''
+  if (code.includes('USERNAME_IS_ALREADY_TAKEN')) return 'Username ini sudah dipakai. Pilih username lain.'
+  if (code.includes('USER_ALREADY_EXISTS') || code.includes('EMAIL_ALREADY_EXISTS')) return 'Email ini sudah terdaftar. Silakan masuk atau gunakan email lain.'
+  if (code.includes('CAPTCHA')) return 'Verifikasi keamanan gagal. Muat ulang verifikasi lalu coba lagi.'
+  if ((error.status ?? 0) >= 500 || code.includes('INTERNAL_SERVER')) {
+    return 'Server gagal menyimpan pendaftaran atau mengirim email verifikasi. Pastikan database dan konfigurasi SMTP aktif, lalu coba lagi.'
+  }
+  return error.message?.trim() || (code ? `Pendaftaran gagal (kode ${code}). Periksa data lalu coba lagi.` : 'Pendaftaran gagal. Periksa data lalu coba lagi.')
+}
 
 async function prepareProfileImage(file: File) {
   if (!file.type.startsWith('image/')) throw new Error('Pilih file gambar, seperti JPG, PNG, atau WebP.')
@@ -270,6 +281,17 @@ export default function AuthPages({ modalMode, onClose, onModeChange }: AuthPage
       setBusy(true)
       const email = String(form.get('email')).trim()
       try {
+        let healthResponse: Response
+        try {
+          healthResponse = await fetch(`${apiBaseUrl}/api/health`, { credentials: 'include' })
+        } catch {
+          setError('Server PojokPixel tidak dapat dihubungi. Pastikan API backend sedang berjalan.')
+          return
+        }
+        if (!healthResponse.ok) {
+          setError('Pendaftaran belum bisa diproses karena database PostgreSQL belum tersambung ke API. Jalankan database lalu mulai ulang backend.')
+          return
+        }
         const result = await authClient.signUp.email({
           name: String(form.get('name')).trim(),
           email,
@@ -279,7 +301,7 @@ export default function AuthPages({ modalMode, onClose, onModeChange }: AuthPage
           callbackURL: `${window.location.origin}/login?verified=1`,
           fetchOptions: { headers: { 'x-captcha-response': captchaToken } },
         })
-        if (result.error) setError(result.error.message || 'Pendaftaran belum berhasil. Periksa data dan coba lagi.')
+        if (result.error) setError(registrationErrorMessage(result.error))
         else setSuccess(`Akun berhasil didaftarkan. Tautan verifikasi dikirim ke ${email}.`)
       } catch { setError('Tidak dapat terhubung ke server email atau API. Periksa konfigurasi dan coba lagi.') }
       finally { setBusy(false); setCaptchaToken(''); setCaptchaResetKey((key) => key + 1) }

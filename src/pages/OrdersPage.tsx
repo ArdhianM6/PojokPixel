@@ -15,7 +15,8 @@ export interface OrderRecord {
   timestamp: number
   totalAmount: number
   paymentMethod: 'qris' | 'bca' | 'cc'
-  status: 'completed'
+  status: 'pending' | 'completed' | 'cancelled'
+  expiresAt?: number
   items: OrderItem[]
 }
 
@@ -243,9 +244,9 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
                       {order.orderId}
                     </span>
                     <span className="text-xs text-[#72736c]">{order.date}</span>
-                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Lunas (Terverifikasi)
+                    <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 ${order.status === 'completed' ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' : order.status === 'pending' ? 'text-amber-800 bg-amber-50 border border-amber-200' : 'text-red-700 bg-red-50 border border-red-200'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${order.status === 'completed' ? 'bg-emerald-500' : order.status === 'pending' ? 'bg-amber-500' : 'bg-red-500'}`} />
+                      {order.status === 'completed' ? 'Lunas (Simulasi)' : order.status === 'pending' ? 'Menunggu Pembayaran' : 'Dibatalkan · waktu QR habis'}
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
@@ -255,7 +256,7 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
                     <strong className="font-[family-name:var(--font-display)] text-base font-bold text-[#303236]">
                       {rupiah(order.totalAmount)}
                     </strong>
-                    {order.items.length > 1 && (
+                    {order.status === 'completed' && order.items.length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleDownloadAllFromOrder(order)}
@@ -268,7 +269,7 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
                 </div>
 
                 {/* Items in this Order */}
-                <div className="divide-y divide-[#ebe9e1]">
+                <div className={`divide-y divide-[#ebe9e1] ${order.status !== 'completed' ? 'opacity-70' : ''}`}>
                   {order.items.map((item) => {
                     const p = item.product
                     return (
@@ -313,7 +314,7 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
                         </div>
 
                         {/* Action Buttons Row */}
-                        <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-[#ebe9e1]">
+                        {order.status === 'completed' && <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-[#ebe9e1]">
                           {/* 1. Unduh Berkas Button with crisp white text & standard orange */}
                           <button
                             type="button"
@@ -345,7 +346,7 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
                           >
                             Detail Produk →
                           </button>
-                        </div>
+                        </div>}
 
                         {/* 4. Buyer Note */}
                         {p.buyerNote && (

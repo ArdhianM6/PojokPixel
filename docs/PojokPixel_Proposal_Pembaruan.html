@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Proposal PojokPixel - Pembaruan Implementasi</title>
+<style>
+@page { size:A4; margin:15mm 17mm 16mm; @bottom-right { content:"POJOKPIXEL  |  " counter(page); color:#74766f; font:8.5pt Arial,sans-serif; } }
+* { box-sizing:border-box }
+body { margin:0; color:#303236; font:9.2pt/1.5 Arial,"Segoe UI",sans-serif }
+h1,h2,h3 { font-family:Arial,"Segoe UI",sans-serif; line-height:1.2 }
+h1 { margin:0 0 7mm; color:#25282c; font-size:35pt; letter-spacing:-1.2pt }
+h2 { margin:0 0 4mm; padding-bottom:2mm; color:#25282c; font-size:17pt; border-bottom:2px solid #e65416 }
+h3 { margin:4mm 0 2mm; color:#b64012; font-size:11pt }
+p { margin:0 0 3mm }
+ul,ol { margin:2mm 0 4mm; padding-left:6mm }
+li { margin:1.5mm 0 }
+.cover { height:250mm; display:flex; flex-direction:column; justify-content:center; position:relative; page-break-after:always }
+.eyebrow { margin-bottom:8mm; color:#c94b17; font:bold 9pt Arial,sans-serif; letter-spacing:2px; text-transform:uppercase }
+.subtitle { max-width:135mm; color:#586068; font-size:15pt; line-height:1.45 }
+.chip { display:inline-block; width:max-content; margin-top:9mm; padding:2mm 4mm; border-radius:5mm; color:#8c3510; background:#fff0e8; font-size:8.5pt }
+.cover-note { position:absolute; right:0; bottom:20mm; left:0; padding:4mm 5mm; border-left:4px solid #e65416; background:#f6f4ef; color:#464a4e }
+.section { margin-bottom:7mm }
+.page { break-before:page; page-break-before:always }
+.callout { margin:4mm 0; padding:4mm 5mm; border-left:4px solid #e65416; border-radius:0 3mm 3mm 0; background:#f7f3ee }
+.callout strong { color:#a63a12 }
+table { width:100%; margin:3mm 0 5mm; border-collapse:collapse; font-size:8.4pt }
+th { background:#303236; color:#fff; text-align:left; font-weight:700 }
+td,th { padding:1.7mm 2.5mm; border:1px solid #deddd6; vertical-align:top }
+tr { page-break-inside:avoid }
+.muted { color:#686b70; font-size:8.4pt }
+.tag { display:inline-block; padding:1mm 2mm; border-radius:3mm; color:#8c3510; background:#fff0e8; font-size:8pt; white-space:nowrap }
+.feature-grid { display:grid; grid-template-columns:1fr 1fr; gap:3mm }
+.feature { padding:3.5mm 4mm; border:1px solid #e2dfd7; border-radius:3mm; background:#fff }
+.feature b { display:block; margin-bottom:1mm; color:#303236 }
+.small { color:#666a6f; font-size:8.3pt }
+.footnote { margin-top:3mm; padding-top:2mm; border-top:1px solid #deddd6; color:#777; font-size:8pt }
+</style>
+</head>
+<body>
+<section class="cover">
+  <div class="eyebrow">Proposal Produk Digital</div>
+  <h1>PojokPixel</h1>
+  <div class="subtitle">Marketplace aset kreatif untuk menemukan, meninjau, dan menggunakan produk digital.</div>
+  <div class="chip">Pembaruan fitur dan status implementasi | 17 November 2026</div>
+  <div class="cover-note"><b>Revisi ini mengikuti program yang tersedia saat ini.</b><br>Fitur prototipe, data simulasi, batas implementasi, dan rencana pengembangan dijelaskan secara terpisah.</div>
+</section>
+
+<section class="section">
+  <h2>1. Ringkasan eksekutif</h2>
+  <p>PojokPixel adalah prototipe marketplace aset digital bagi pelajar, kreator, UMKM, freelancer, dan pemilik usaha. Pengunjung dapat menjelajahi katalog, membuka halaman detail produk, menyimpan favorit, mengelola keranjang, dan melihat riwayat pesanan. Aplikasi juga menyediakan autentikasi, area pengelolaan produk kreator berbasis browser, dan studio pixel art sederhana.</p>
+  <p>Pembaruan terbaru memperjelas pengalaman detail produk. Halaman produk dapat dibuka dari katalog maupun riwayat, lalu menampilkan media, deskripsi, harga, format dan file yang diterima, ulasan, rating, serta jumlah checkout yang tercatat di browser. Kreator dapat menambahkan tautan preview video saat membuat atau mengubah produk.</p>
+  <div class="callout"><strong>Status prototipe:</strong> checkout masih simulasi; pesanan, listing kreator, ulasan, rating, dan hitungan checkout pada fitur tersebut disimpan lokal di browser. Data tidak otomatis tersinkron antarperangkat atau menjadi statistik bersama semua pengguna. Pembayaran dan distribusi file belum siap untuk operasi produksi.</div>
+</section>
+
+<section class="section">
+  <h2>2. Sasaran dan alur pengguna</h2>
+  <p>PojokPixel menguji cara yang lebih praktis untuk menemukan aset digital sesuai kebutuhan dan anggaran, dengan informasi produk yang mudah diperiksa sebelum pengguna memasukkannya ke keranjang.</p>
+  <div class="feature-grid">
+    <div class="feature"><b>Temukan</b><span class="small">Jelajahi beranda atau katalog, gunakan pencarian dan filter kategori.</span></div>
+    <div class="feature"><b>Tinjau</b><span class="small">Buka detail produk untuk melihat media, deskripsi, format, lampiran, harga, dan catatan kreator.</span></div>
+    <div class="feature"><b>Berinteraksi</b><span class="small">Tambahkan produk ke keranjang, kirim rating dan komentar, atau lihat ulasan yang tersimpan lokal.</span></div>
+    <div class="feature"><b>Akses pembelian</b><span class="small">Buka riwayat pesanan demo dan kembali ke halaman detail produk dari pesanan terkait.</span></div>
+  </div>
+  <p class="footnote">Sasaran awal yang diusulkan: pelajar/mahasiswa, UMKM, kreator/freelancer, pengajar, dan komunitas. Kebutuhan serta kesediaan membayar tetap perlu divalidasi.</p>
+</section>
+
+<section class="section page">
+  <h2>3. Fitur aplikasi dan status implementasi</h2>
+  <table><thead><tr><th>Area</th><th>Yang tersedia pada prototipe</th><th>Status dan batas</th></tr></thead><tbody>
+    <tr><td>Beranda dan katalog</td><td>Jelajah produk, kategori, pencarian/filter, sorotan, dan tautan menuju detail produk.</td><td>Antarmuka berfungsi; sebagian katalog menggunakan data contoh frontend.</td></tr>
+    <tr><td>Detail produk</td><td>Cover, deskripsi, harga, format, file yang diterima, catatan kreator, preview video opsional, serta rekomendasi produk lain.</td><td>Media video menerima tautan YouTube, Vimeo, atau video langsung yang didukung.</td></tr>
+    <tr><td>Ulasan dan rating</td><td>Form rating bintang dan komentar pada halaman produk.</td><td>Disimpan di localStorage per browser; belum ada moderasi, verifikasi pembelian, atau agregasi server.</td></tr>
+    <tr><td>Hitungan checkout</td><td>Detail produk menunjukkan jumlah checkout dari pesanan selesai yang tercatat pada browser.</td><td>Bukan jumlah seluruh pembeli platform; belum menjadi statistik bersama atau unik antarperangkat.</td></tr>
+    <tr><td>Riwayat pembelian</td><td>Daftar pesanan dan tombol menuju detail produk terkait.</td><td>Pesanan demo tersimpan lokal; checkout belum menerima konfirmasi gateway.</td></tr>
+    <tr><td>Area kreator</td><td>Profil kreator dan buat, edit, hapus listing; mengisi cover, deskripsi, format, file/link pengiriman, catatan, dan tautan preview video.</td><td>Listing tersimpan di browser; belum ada role backend, moderasi, atau publikasi multi-vendor terpusat.</td></tr>
+    <tr><td>Akun</td><td>Daftar/masuk email dan alur OAuth Google/GitHub melalui Better Auth.</td><td>Memerlukan backend, database, kredensial provider, URL callback, dan konfigurasi environment yang benar.</td></tr>
+    <tr><td>Favorit dan keranjang</td><td>Menyimpan produk pilihan dan isi keranjang.</td><td>Disimpan di localStorage pada browser.</td></tr>
+    <tr><td>Studio pixel art</td><td>Menggambar pixel dan mengekspor hasil PNG.</td><td>Fitur sisi-klien.</td></tr>
+    <tr><td>API dan basis data</td><td>Backend Hono, Better Auth, Drizzle ORM, dan PostgreSQL tersedia.</td><td>Katalog antarmuka dan interaksi yang disebut lokal belum memakai API/database sebagai sumber utama.</td></tr>
+  </tbody></table>
+  <p class="muted">Rating/penjualan pada data katalog, testimoni, badge, dan label promosi yang berasal dari data contoh tidak boleh diperlakukan sebagai metrik bisnis aktual. Rating serta checkout pada halaman detail berasal dari aktivitas lokal di browser.</p>
+</section>
+
+<section class="section page">
+  <h2>4. Detail produk dan kontribusi kreator</h2>
+  <p>Detail produk menjadi tempat utama untuk menilai kecocokan aset sebelum checkout. Pengguna dapat masuk ke halaman ini dengan menekan nama produk di katalog atau tombol <b>Detail Produk</b> pada riwayat pesanan.</p>
+  <ul>
+    <li>Cover produk ditampilkan bersama deskripsi, harga, kategori, dan format aset.</li>
+    <li>Nama serta ukuran lampiran yang dicantumkan kreator dapat dilihat; tautan cloud hanya disediakan ketika kreator memasukkan tautan yang valid.</li>
+    <li>Kreator dapat memasukkan tautan video preview saat mengelola produk. Video ditampilkan pada halaman detail bila URL berasal dari format/penyedia yang didukung.</li>
+    <li>Pengunjung dapat mengirim rating bintang dan komentar. Ulasan tersimpan di browser untuk produk terkait.</li>
+    <li>Jumlah checkout dihitung dari pesanan selesai yang tersimpan pada browser tersebut. Nilainya tidak mewakili seluruh platform atau orang unik.</li>
+  </ul>
+  <div class="callout">Area kreator saat ini adalah fitur pengelolaan listing lokal. Profil kreator di aplikasi tidak sama dengan role akun yang memiliki izin terverifikasi di server.</div>
+</section>
+
+<section class="section">
+  <h2>5. Peran, autentikasi, dan arsitektur</h2>
+  <p>Akun pada aplikasi merupakan akun pengguna umum untuk autentikasi dan profil. Sistem belum menerapkan hak akses yang membedakan pembeli, kreator, dan administrator. Istilah kreator mengacu pada alur listing di antarmuka, bukan role backend yang telah disetujui atau diverifikasi.</p>
+  <ul>
+    <li><b>Frontend:</b> React dan TypeScript untuk katalog, autentikasi, riwayat, area kreator, studio, dan halaman detail.</li>
+    <li><b>API:</b> Hono untuk endpoint aplikasi dan Better Auth.</li>
+    <li><b>Basis data:</b> Drizzle ORM dan PostgreSQL digunakan sebagai fondasi backend dan autentikasi. Data demo yang disebut di atas masih memakai penyimpanan browser.</li>
+    <li><b>OAuth:</b> Google dan GitHub dapat digunakan ketika backend menerima client ID/secret yang sesuai serta callback diizinkan oleh konfigurasi provider.</li>
+    <li><b>Pembayaran:</b> pilihan metode dan layar sukses adalah simulasi, belum merupakan proses pembayaran gateway.</li>
+    <li><b>Distribusi:</b> alur UI mengakomodasi lampiran dan tautan akses; penyimpanan, otorisasi, serta distribusi file terkontrol belum menjadi layanan produksi.</li>
+  </ul>
+</section>
+
+<section class="section page">
+  <h2>6. Model bisnis dan asumsi</h2>
+  <p>Model yang diusulkan adalah penjualan produk digital satuan dan bundel, dengan produk gratis sebagai pengenalan katalog.</p>
+  <table><thead><tr><th>Jenis produk</th><th>Rentang harga usulan</th></tr></thead><tbody>
+    <tr><td>Template website</td><td>Rp49.000–Rp199.000</td></tr><tr><td>Poster digital</td><td>Rp15.000–Rp39.000</td></tr><tr><td>Materi pembelajaran digital</td><td>Rp50.000–Rp99.000</td></tr><tr><td>Bundel produk</td><td>Rp59.000–Rp249.000</td></tr>
+  </tbody></table>
+  <p>Harga dan skema komisi masih merupakan hipotesis. Proposal awal mengusulkan porsi kreator sekitar 80% dan platform 20%; aplikasi belum menghitung atau membayarkan pembagian tersebut.</p>
+  <p>Estimasi anggaran pada proposal berjumlah Rp16.000.000 untuk 12 bulan: hosting Rp4.000.000, domain/email/layanan teknis Rp1.000.000, kurasi katalog Rp4.000.000, pemasaran Rp3.000.000, administrasi/transaksi Rp1.000.000, dan cadangan Rp3.000.000. Angka ini adalah estimasi, bukan pengeluaran yang telah dilakukan.</p>
+</section>
+
+<section class="section">
+  <h2>7. Tim pengembang</h2>
+  <table><thead><tr><th>Anggota</th><th>Peran yang diusulkan</th></tr></thead><tbody>
+    <tr><td>Ardhian Maulana Tanjung</td><td>CEO, riset produk/pasar, backend, API, prioritas fitur, dan koordinasi.</td></tr>
+    <tr><td>Aulia Ryansifa Wardah</td><td>CTO, frontend, deployment, pemeliharaan, dan sysadmin.</td></tr>
+    <tr><td>Khoirunnisa Salsabila Osmon</td><td>Manajemen produk, riset pengguna, marketing, kurasi katalog/konten, dan pengujian.</td></tr>
+  </tbody></table>
+  <p class="muted">Pembagian tersebut adalah usulan kerja tim, bukan role akses dalam aplikasi.</p>
+</section>
+
+<section class="section page">
+  <h2>8. Tahapan pengembangan berikutnya</h2>
+  <ol>
+    <li><b>Stabilisasi pengalaman:</b> uji navigasi detail produk dari katalog dan riwayat, responsivitas, aksesibilitas, serta formulir preview/ulasan.</li>
+    <li><b>Data terpusat:</b> pindahkan katalog, listing kreator, ulasan, checkout, dan riwayat dari localStorage ke API/database dengan validasi server dan pencadangan.</li>
+    <li><b>Role dan moderasi:</b> tetapkan role pembeli, kreator, dan admin; implementasikan izin server, pendaftaran/persetujuan kreator, moderasi, serta pengelolaan produk.</li>
+    <li><b>Transaksi nyata:</b> pilih payment gateway, verifikasi webhook, rekonsiliasi, refund, invoice, dan pencatatan status pembayaran.</li>
+    <li><b>Distribusi digital:</b> sediakan penyimpanan file, pembatasan akses, pencatatan unduhan, kebijakan lisensi, serta alur penanganan hak cipta.</li>
+    <li><b>Validasi pertumbuhan:</b> uji harga, bundel, referral, analitik, dan ulasan terverifikasi setelah data operasional tersedia.</li>
+  </ol>
+  <h3>Risiko dan tindak lanjut</h3>
+  <table><thead><tr><th>Kesenjangan</th><th>Tindak lanjut</th></tr></thead><tbody>
+    <tr><td>Data lokal dapat hilang/tidak tersinkron</td><td>Gunakan API/database dan backup terjadwal untuk data penting.</td></tr>
+    <tr><td>Checkout simulasi tampak seperti pembayaran nyata</td><td>Jelaskan status simulasi sampai gateway dan verifikasi transaksi tersedia.</td></tr>
+    <tr><td>Checkout dan ulasan belum bersifat global/terverifikasi</td><td>Simpan data pada server, hubungkan ke pesanan, dan cegah ulasan ganda/palsu.</td></tr>
+    <tr><td>Role dan moderasi belum diterapkan</td><td>Terapkan matriks izin, pemeriksaan server, dan proses persetujuan.</td></tr>
+    <tr><td>Hak distribusi aset belum menjadi alur operasional</td><td>Minta bukti kepemilikan/lisensi dan siapkan proses laporan/takedown.</td></tr>
+  </tbody></table>
+</section>
+
+<section class="section">
+  <h2>9. Penutup</h2>
+  <p>PojokPixel telah memiliki prototipe marketplace dengan katalog, autentikasi, riwayat lokal, area kreator, studio pixel art, dan detail produk yang kini mendukung media preview serta interaksi ulasan. Proposal ini mempertahankan tujuan bisnis marketplace aset digital sambil membedakan fitur yang sudah dicoba di aplikasi dari layanan yang masih perlu dibangun sebelum peluncuran komersial.</p>
+  <p class="muted">Dokumen ini menjelaskan status aplikasi pada tanggal revisi. Ketersediaan login OAuth bergantung pada konfigurasi database, backend, kredensial Google/GitHub, dan URL callback di lingkungan yang digunakan.</p>
+</section>
+</body>
+</html>
