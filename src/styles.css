@@ -7610,6 +7610,16 @@ button {
   .product-card, .category-showcase-card, .review-card { transition: none; }
 }
 
+@media (max-width: 380px) {
+  /* Keep the header controls inside narrow phone viewports. Account access
+     remains available from the mobile bottom navigation. */
+  .header-login,
+  .header-profile-name,
+  .profile-chevron {
+    display: none;
+  }
+}
+
 /* Creator gallery uploads and product detail gallery */
 .creator-gallery-editor {
   display: grid;
