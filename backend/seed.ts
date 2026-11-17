@@ -3,10 +3,9 @@ import { db, pool } from './db/index.js'
 import { products, teamMembers } from './db/schema.js'
 
 const memberSeeds = [
-  { name: 'Ardhian Maulana Tanjung', role: '404 Not Found', sortOrder: 1 },
-  { name: 'Aulia Ryansifa Wardah', role: '404 Not Found', sortOrder: 2 },
-  { name: 'Khoirunnisa Salsabila Osmon', role: '404 Not Found', sortOrder: 3 },
-  { name: 'Dhioza Agusta Vermana', role: '404 Not Found', sortOrder: 4 },
+  { name: 'Ardhian Maulana Tanjung', role: 'UI/UX & Lead Designer', sortOrder: 1 },
+  { name: 'Aulia Ryansifa Wardah', role: 'Frontend Engineer', sortOrder: 2 },
+  { name: 'Khoirunnisa Salsabila Osmon', role: 'Creative Director & Content', sortOrder: 3 },
 ]
 
 const productSeeds = [

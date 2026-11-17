@@ -49,11 +49,10 @@ Ganti contoh domain tersebut dengan domain akhir sebelum membuat Turnstile widge
 
 Endpoint awal: `GET /api/health`, `GET /api/products`, dan `GET /api/team`.
 
-## Tim 404 Not Found
+## Tim Pojok Pixel
 
 - Ardhian Maulana Tanjung
 - Aulia Ryansifa Wardah
 - Khoirunnisa Salsabila Osmon
-- Dhioza Agusta Vermana
 
 Frontend katalog saat ini memakai data contoh agar tampilan dapat dieksplorasi tanpa database. API menyediakan pemeriksaan koneksi database dan endpoint untuk membaca produk serta anggota tim.

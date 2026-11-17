@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /dashboard
+Disallow: /profile
+Crawl-delay: 1
+
+Sitemap: https://pojokpixel.studio/sitemap.xml

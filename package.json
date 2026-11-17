@@ -8,6 +8,7 @@
     "dev:all": "concurrently --kill-others --names API,WEB \"npm:dev:api\" \"npm:dev\"",
     "dev:api": "tsx watch backend/index.ts",
     "build": "tsc -b && vite build",
+    "preview": "vite preview",
     "start:api": "tsx backend/index.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx backend/migrate.ts",

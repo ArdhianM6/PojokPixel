@@ -1,0 +1,23 @@
+{
+  "name": "Pojok Pixel",
+  "short_name": "PojokPixel",
+  "description": "Marketplace produk digital Indonesia — Template Website, Poster Digital, Pembelajaran Desain",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f5f2",
+  "theme_color": "#e65416",
+  "icons": [
+    { "src": "/pojokpixel-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "categories": ["shopping", "education", "design"],
+  "lang": "id",
+  "dir": "ltr",
+  "shortcuts": [
+    { "name": "Katalog Produk", "url": "/#koleksi", "description": "Lihat semua produk digital" },
+    { "name": "Template Website", "url": "/?cat=Template+Website", "description": "Template website siap pakai" },
+    { "name": "Pojok Studio", "url": "/#studio", "description": "Studio pixel art gratis" }
+  ]
+}

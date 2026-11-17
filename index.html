@@ -2,10 +2,80 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <meta name="theme-color" content="#f5f5f2" />
-    <meta name="description" content="PojokPixel — sudut kecil untuk ide besar. Temukan template website, poster, dan pembelajaran digital." />
-    <title>PojokPixel — Sudut kecil untuk ide besar</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="description" content="Pojok Pixel — Marketplace produk digital Indonesia penyedia template website, poster digital, dan pembelajaran desain." />
+    <title>Pojok Pixel — Marketplace Produk Digital</title>
+
+    <!-- PWA & Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/pojokpixel-mark.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/pojokpixel-mark.svg" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://pojokpixel.studio" />
+
+    <!-- SEO -->
+    <meta name="keywords" content="template website, poster digital, pembelajaran desain, marketplace digital indonesia, pojok pixel" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Tim Pojok Pixel" />
+    <meta name="msapplication-TileColor" content="#e65416" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://pojokpixel.studio" />
+    <meta property="og:title" content="Pojok Pixel — Marketplace Produk Digital" />
+    <meta property="og:description" content="Pojok Pixel — Marketplace produk digital Indonesia penyedia template website, poster digital, dan pembelajaran desain." />
+    <meta property="og:image" content="https://pojokpixel.studio/og-image.png" />
+    <meta property="og:locale" content="id_ID" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pojok Pixel — Marketplace Produk Digital" />
+    <meta name="twitter:description" content="Pojok Pixel — Marketplace produk digital Indonesia penyedia template website, poster digital, dan pembelajaran desain." />
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://pojokpixel.studio/#website",
+          "url": "https://pojokpixel.studio",
+          "name": "Pojok Pixel",
+          "description": "Marketplace produk digital Indonesia — Template Website, Poster Digital, Pembelajaran Desain",
+          "inLanguage": "id",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://pojokpixel.studio/?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://pojokpixel.studio/#organization",
+          "name": "Pojok Pixel",
+          "url": "https://pojokpixel.studio",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://pojokpixel.studio/pojokpixel-mark.svg"
+          },
+          "description": "Marketplace produk digital Indonesia penyedia template website, poster digital, dan pembelajaran desain.",
+          "foundingLocation": {
+            "@type": "Country",
+            "name": "Indonesia"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
