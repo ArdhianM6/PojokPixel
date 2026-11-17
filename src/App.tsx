@@ -1486,9 +1486,13 @@ function Storefront() {
                   {cartItems.map((item) => (
                     <div className="cart-item-card" key={item.product.id}>
                       <img
-                        src={`https://images.unsplash.com/${item.product.img}?auto=format&fit=crop&w=120&q=75`}
+                        src={getProductImageUrl(item.product.img)}
                         alt=""
                         className="cart-item-thumb"
+                        onError={(event) => {
+                          event.currentTarget.onerror = null
+                          event.currentTarget.src = '/pojokpixel-cube-crop.png'
+                        }}
                       />
                       <div className="cart-item-details">
                         <span className="cart-item-category">{item.product.category}</span>

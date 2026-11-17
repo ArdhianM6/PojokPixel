@@ -14,6 +14,7 @@ export interface Product {
   label: string
   bg: string
   img: string
+  galleryImages?: string[]
   tag: string
   rating: number
   reviewsCount: number
@@ -361,6 +362,7 @@ export function getCreatorProducts(): Product[] {
           label: uc.label || 'Kreator',
           bg: 'nara',
           img: uc.img || 'photo-1460925895917-afdab827c52f',
+          galleryImages: Array.isArray(uc.galleryImages) ? uc.galleryImages.filter((image: unknown): image is string => typeof image === 'string') : [],
           tag: uc.tag || 'Rilisan Kreator',
           rating: typeof uc.rating === 'number' ? uc.rating : 5.0,
           reviewsCount: 1,
@@ -390,6 +392,7 @@ export function getCreatorProducts(): Product[] {
           label: cp.label || 'Kreator',
           bg: 'nara',
           img: cp.img || 'photo-1460925895917-afdab827c52f',
+          galleryImages: Array.isArray(cp.galleryImages) ? cp.galleryImages.filter((image: unknown): image is string => typeof image === 'string') : [],
           tag: cp.tag || 'Rilisan Kreator',
           rating: typeof cp.rating === 'number' ? cp.rating : 5.0,
           reviewsCount: 1,

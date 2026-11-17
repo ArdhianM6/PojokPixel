@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { getLiveProducts, rupiah, getProductImageUrl } from '../data/marketplace'
 import type { Product } from '../data/marketplace'
 import { authClient } from '../lib/auth-client'
@@ -24,7 +24,7 @@ function getVideoPreview(url?: string) {
     let videoId = ''
     if (host === 'youtu.be') videoId = parsed.pathname.slice(1)
     if (host === 'youtube.com' || host === 'm.youtube.com') {
-      videoId = parsed.searchParams.get('v') || parsed.pathname.match(/\/embed\/([^/]+)/)?.[1] || ''
+      videoId = parsed.searchParams.get('v') || parsed.pathname.match(/\/(?:embed|shorts|live)\/([^/]+)/)?.[1] || ''
     }
     if (videoId) return { type: 'embed' as const, src: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}` }
     if (host === 'vimeo.com' || host === 'player.vimeo.com') {
@@ -80,6 +80,14 @@ export default function ProductDetailPage() {
   const [reviewName, setReviewName] = useState('')
   const [reviewComment, setReviewComment] = useState('')
   const [reviewError, setReviewError] = useState('')
+  const [selectedImage, setSelectedImage] = useState('')
+  const [galleryDirection, setGalleryDirection] = useState<'next' | 'previous'>('next')
+  const [isGalleryPaused, setIsGalleryPaused] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const galleryProductId = product?.id
+  const galleryProductImage = product?.img
+  const galleryImages = product ? [product.img, ...(product.galleryImages || [])].filter((image, index, images) => Boolean(image) && images.indexOf(image) === index) : []
+  const galleryImagesRef = useRef(galleryImages)
+  galleryImagesRef.current = galleryImages
 
   useEffect(() => {
     if (!product) return
@@ -97,6 +105,19 @@ export default function ProductDetailPage() {
     }
   }, [product?.id])
 
+  useEffect(() => {
+    if (!galleryProductId || !galleryProductImage || galleryImages.length < 2 || isGalleryPaused) return
+    const slideTimer = window.setInterval(() => {
+      setGalleryDirection('next')
+      setSelectedImage((currentImage) => {
+        const images = galleryImagesRef.current
+        const currentIndex = images.indexOf(currentImage || galleryProductImage)
+        return images[(currentIndex + 1) % images.length] || galleryProductImage
+      })
+    }, 4800)
+    return () => window.clearInterval(slideTimer)
+  }, [galleryProductId, galleryProductImage, galleryImages.length, isGalleryPaused])
+
   const averageRating = useMemo(() => reviews.length ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0, [reviews])
 
   if (!product) {
@@ -113,6 +134,7 @@ export default function ProductDetailPage() {
   }
 
   const related = liveList.filter((item) => item.id !== product.id).slice(0, 3)
+  const activeImage = selectedImage || product.img
   const discount = product.originalPrice > product.price && product.price > 0 ? Math.round((1 - product.price / product.originalPrice) * 100) : 0
   const videoPreview = getVideoPreview(product.videoUrl)
 
@@ -176,9 +198,53 @@ export default function ProductDetailPage() {
         <div className="detail-grid">
           <div className="detail-image-col">
             <div className="detail-image-wrap">
-              <img src={getProductImageUrl(product.img)} alt={product.name} className="detail-image" />
+              <img
+                key={activeImage}
+                src={getProductImageUrl(activeImage)}
+                alt={product.name}
+                className={`detail-image ${galleryImages.length > 1 ? `detail-image-slide-${galleryDirection}` : ''}`}
+                onError={(event) => {
+                  event.currentTarget.onerror = null
+                  event.currentTarget.src = '/pojokpixel-cube-crop.png'
+                }}
+              />
               <span className="detail-label-badge">{product.label}</span>
             </div>
+            {galleryImages.length > 1 && (
+              <div className="detail-gallery" aria-label="Galeri gambar produk">
+                <div className="detail-gallery-toolbar">
+                  <span>Foto {galleryImages.indexOf(activeImage) + 1} dari {galleryImages.length}</span>
+                  <button type="button" onClick={() => setIsGalleryPaused((paused) => !paused)} aria-pressed={isGalleryPaused}>
+                    {isGalleryPaused ? 'Putar slideshow' : 'Jeda slideshow'}
+                  </button>
+                </div>
+                <div className="detail-gallery-thumbnails">
+                  {galleryImages.map((image, index) => (
+                    <button
+                      type="button"
+                      className={`detail-gallery-thumb ${activeImage === image ? 'is-active' : ''}`}
+                      key={`${index}-${image.slice(0, 32)}`}
+                      onClick={() => {
+                        const currentIndex = galleryImages.indexOf(activeImage)
+                        setGalleryDirection(index >= currentIndex ? 'next' : 'previous')
+                        setSelectedImage(image)
+                      }}
+                      aria-label={`Tampilkan gambar ${index + 1} dari ${galleryImages.length}`}
+                      aria-pressed={activeImage === image}
+                    >
+                      <img
+                        src={getProductImageUrl(image)}
+                        alt=""
+                        onError={(event) => {
+                          event.currentTarget.onerror = null
+                          event.currentTarget.src = '/pojokpixel-cube-crop.png'
+                        }}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {videoPreview && <div className="detail-video-card"><div className="detail-video-heading"><span>Preview produk</span><span>Video kreator</span></div>{videoPreview.type === 'video' ? <video className="detail-video" src={videoPreview.src} controls playsInline preload="metadata" /> : <iframe className="detail-video" src={videoPreview.src} title={`Video preview ${product.name}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />}</div>}
             <div className="detail-trust-row">
               <div className="detail-trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e65416" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg><span>Unduhan Instan</span></div>
@@ -192,7 +258,15 @@ export default function ProductDetailPage() {
             <h1 className="detail-title">{product.name}</h1>
             <div className="detail-meta-row"><StarRating rating={averageRating} count={reviews.length} /><span className="detail-sales">{checkoutCount} checkout tercatat</span></div>
             <p className="detail-desc">{product.shortDesc}</p>
-            <div className="detail-price-row"><span className="detail-price">{rupiah(product.price)}</span>{product.price > 0 && <><span className="detail-original-price">{rupiah(product.originalPrice)}</span>{discount > 0 && <span className="detail-discount-badge">Hemat {discount}%</span>}</>}</div>
+            <div className="detail-price-row">
+              <div className="detail-price-stack">
+                {product.price > 0 && product.originalPrice > product.price && (
+                  <span className="detail-original-price">{rupiah(product.originalPrice)}</span>
+                )}
+                <span className="detail-price">{product.price === 0 ? 'Gratis' : rupiah(product.price)}</span>
+              </div>
+              {discount > 0 && <span className="detail-discount-badge">Hemat {discount}%</span>}
+            </div>
             <div className="detail-section"><h3 className="detail-section-title">File yang diterima</h3><div className="detail-formats">{(product.formats.length ? product.formats : ['Detail format belum dicantumkan']).map((format) => <span key={format} className="detail-format-chip">{format}</span>)}</div>{product.fileAttachment && <div className="detail-file-row"><span className="detail-file-icon">↓</span><span><strong>{product.fileAttachment.fileName}</strong><small>{product.fileAttachment.fileSize} · {product.fileAttachment.fileType}</small></span></div>}{product.accessUrl && <p className="detail-access-note">Termasuk tautan akses cloud setelah checkout.</p>}</div>
             <div className="detail-section"><h3 className="detail-section-title">Yang kamu dapat</h3><ul className="detail-includes">{product.includes.map((item) => <li key={item}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e65416" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7" /></svg><span>{item}</span></li>)}</ul></div>
             {product.buyerNote && <div className="detail-note"><strong>Catatan kreator</strong><p>{product.buyerNote}</p></div>}
@@ -214,7 +288,7 @@ export default function ProductDetailPage() {
           </div>
         </section>
 
-        <section className="detail-related" aria-labelledby="related-heading"><h2 id="related-heading" className="detail-related-title">Produk lain yang mungkin kamu suka</h2><div className="detail-related-grid">{related.map((item) => <a key={item.id} href={`/produk/${item.id}`} className="detail-related-card"><img src={getProductImageUrl(item.img)} alt={item.name} className="detail-related-img" loading="lazy" /><div className="detail-related-info"><span className="detail-related-cat">{item.category}</span><span className="detail-related-name">{item.name}</span><span className="detail-related-price">{rupiah(item.price)}</span></div></a>)}</div></section>
+        <section className="detail-related" aria-labelledby="related-heading"><h2 id="related-heading" className="detail-related-title">Produk lain yang mungkin kamu suka</h2><div className="detail-related-grid">{related.map((item) => <a key={item.id} href={`/produk/${item.id}`} className="detail-related-card"><img src={getProductImageUrl(item.img)} alt={item.name} className="detail-related-img" loading="lazy" /><div className="detail-related-info"><span className="detail-related-cat">{item.category}</span><span className="detail-related-name">{item.name}</span><span className="detail-related-price-stack">{item.originalPrice > item.price && <span className="detail-original-price">{rupiah(item.originalPrice)}</span>}<span className="detail-related-price">{item.price === 0 ? 'Gratis' : rupiah(item.price)}</span></span></div></a>)}</div></section>
       </div>
       <footer className="detail-footer"><div className="app-container"><span>© 2026 Pojok Pixel · Dibuat dengan ♥ oleh Ardhian, Aulia & Khoirunnisa</span><a href="/">Kembali ke Beranda</a></div></footer>
     </div>

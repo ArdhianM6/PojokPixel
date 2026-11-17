@@ -22,6 +22,7 @@ interface CustomProject {
   originalPrice: number
   label: string
   img: string
+  galleryImages?: string[]
   tag: string
   shortDesc: string
   formats: string[]
@@ -152,6 +153,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
   
   // Image cover selection: supports upload, custom URL, or preset
   const [projImg, setProjImg] = useState('photo-1460925895917-afdab827c52f')
+  const [projGalleryImages, setProjGalleryImages] = useState<string[]>([])
   const [imageTab, setImageTab] = useState<'upload' | 'preset' | 'url'>('upload')
   const [customImgUrl, setCustomImgUrl] = useState('')
   const [isProcessingImg, setIsProcessingImg] = useState(false)
@@ -235,6 +237,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
     setProjFormats('Figma, HTML5, Canva')
     setProjDesc('')
     setProjImg('photo-1460925895917-afdab827c52f')
+    setProjGalleryImages([])
     setImageTab('upload')
     setCustomImgUrl('')
     setAttachedFile(null)
@@ -258,6 +261,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
     setProjFormats(project.formats.join(', '))
     setProjDesc(project.shortDesc)
     setProjImg(project.img)
+    setProjGalleryImages(Array.isArray(project.galleryImages) ? project.galleryImages : [])
 
     // Image Tab Detection
     if (project.img.startsWith('data:image/')) {
@@ -292,6 +296,33 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
       notify('📸 Foto cover produk berhasil diunggah!')
     } catch {
       notify('Gagal memproses gambar. Coba gunakan gambar lain.')
+    } finally {
+      setIsProcessingImg(false)
+    }
+  }
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).filter((file) => file.type.startsWith('image/'))
+    e.target.value = ''
+    if (!files.length) return
+
+    const remaining = Math.max(0, 4 - projGalleryImages.length)
+    if (remaining === 0) {
+      notify('Maksimal 4 gambar tambahan. Hapus gambar lama untuk menggantinya.')
+      return
+    }
+
+    const selectedFiles = files.slice(0, remaining)
+    setIsProcessingImg(true)
+    try {
+      const compressedImages = await Promise.all(selectedFiles.map((file) => compressImage(file, 900, 0.72)))
+      const validImages = compressedImages.filter(Boolean)
+      setProjGalleryImages((current) => [...current, ...validImages].slice(0, 4))
+      if (files.length > remaining) notify(`Hanya ${remaining} gambar tambahan yang ditambahkan. Maksimal 4 gambar.`)
+      else notify(`${validImages.length} gambar tambahan berhasil diunggah.`)
+      playSound('pop')
+    } catch {
+      notify('Beberapa gambar gagal diproses. Coba unggah JPG, PNG, atau WebP yang lebih kecil.')
     } finally {
       setIsProcessingImg(false)
     }
@@ -361,6 +392,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
           originalPrice: originalPriceNum,
           label: projLabel.trim() || 'Baru',
           img: projImg,
+          galleryImages: projGalleryImages,
           tag: projTag.trim() || 'Aset Kreator',
           shortDesc: projDesc.trim() || 'Project digital resmi buatan kreator terverifikasi PojokPixel.',
           formats: formatsArr.length > 0 ? formatsArr : ['File Digital'],
@@ -372,12 +404,13 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
         }
       })
 
-      setMyProjects(updated)
       try {
         localStorage.setItem('pojokpixel:creator_projects', JSON.stringify(updated))
       } catch {
-        notify('Penyimpanan lokal penuh, coba gunakan file cover yang lebih kecil.')
+        notify('Penyimpanan browser penuh. Kurangi gambar galeri atau unggah gambar yang lebih kecil.')
+        return
       }
+      setMyProjects(updated)
 
       // Also update / sync in user_catalog
       try {
@@ -391,6 +424,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
           label: projLabel.trim() || 'Baru',
           bg: 'nara',
           img: projImg,
+          galleryImages: projGalleryImages,
           tag: projTag.trim() || 'Aset Kreator',
           rating: 5.0,
           reviewsCount: 1,
@@ -428,6 +462,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
         originalPrice: originalPriceNum,
         label: projLabel.trim() || 'Baru',
         img: projImg,
+        galleryImages: projGalleryImages,
         tag: projTag.trim() || 'Aset Kreator',
         shortDesc: projDesc.trim() || 'Project digital resmi buatan kreator terverifikasi PojokPixel.',
         formats: formatsArr.length > 0 ? formatsArr : ['File Digital'],
@@ -442,8 +477,13 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
       }
 
       const updated = [newProject, ...myProjects]
+      try {
+        localStorage.setItem('pojokpixel:creator_projects', JSON.stringify(updated))
+      } catch {
+        notify('Penyimpanan browser penuh. Kurangi gambar galeri atau unggah gambar yang lebih kecil.')
+        return
+      }
       setMyProjects(updated)
-      localStorage.setItem('pojokpixel:creator_projects', JSON.stringify(updated))
 
       try {
         const storedCatalog = JSON.parse(localStorage.getItem('pojokpixel:user_catalog') || '[]') as Product[]
@@ -456,6 +496,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
           label: newProject.label,
           bg: 'nara',
           img: newProject.img,
+          galleryImages: newProject.galleryImages,
           tag: newProject.tag,
           rating: 5.0,
           reviewsCount: 1,
@@ -1166,6 +1207,36 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
                       </strong>
                       <small>Gambar ini akan tampil di kartu katalog pembeli dan halaman detail produk.</small>
                     </div>
+                  </div>
+
+                  <div className="creator-gallery-editor">
+                    <div className="creator-gallery-editor-heading">
+                      <div>
+                        <strong>Gambar tambahan untuk galeri</strong>
+                        <small>Tambahkan sampai 4 gambar untuk memperjelas isi produk di halaman detail.</small>
+                      </div>
+                      <span>{projGalleryImages.length}/4</span>
+                    </div>
+                    <label className={`creator-gallery-upload ${isProcessingImg || projGalleryImages.length >= 4 ? 'is-disabled' : ''}`}>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        multiple
+                        disabled={isProcessingImg || projGalleryImages.length >= 4}
+                        onChange={handleGalleryUpload}
+                      />
+                      {isProcessingImg ? 'Memproses gambar...' : 'Pilih beberapa gambar'}
+                    </label>
+                    {projGalleryImages.length > 0 && (
+                      <div className="creator-gallery-grid">
+                        {projGalleryImages.map((image, index) => (
+                          <div className="creator-gallery-thumb" key={`${index}-${image.slice(0, 32)}`}>
+                            <img src={getProductImageUrl(image)} alt={`Gambar tambahan ${index + 1}`} />
+                            <button type="button" onClick={() => setProjGalleryImages((current) => current.filter((_, itemIndex) => itemIndex !== index))} aria-label={`Hapus gambar tambahan ${index + 1}`}>×</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 

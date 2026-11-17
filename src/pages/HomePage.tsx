@@ -58,6 +58,7 @@ export function HomePage({
   // Continuous auto-slide every 3.8 seconds without user needing to click
   useEffect(() => {
     if (bestSellerSlides.length === 0) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % bestSellerSlides.length)
     }, 3800)
