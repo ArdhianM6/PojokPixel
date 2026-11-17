@@ -8,6 +8,6 @@ if (!connectionString) {
   throw new Error('DATABASE_URL belum diatur. Tambahkan connection string PostgreSQL di file .env.')
 }
 
-const pool = new Pool({ connectionString, connectionTimeoutMillis: 5000 })
+const pool = new Pool({ connectionString, connectionTimeoutMillis: 10000, max: 3 })
 export const db = drizzle({ client: pool })
 export { pool }
