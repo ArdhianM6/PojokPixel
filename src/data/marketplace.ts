@@ -25,6 +25,20 @@ export interface Product {
   fileAttachment?: ProductFileAttachment
   accessUrl?: string
   buyerNote?: string
+  videoUrl?: string
+}
+
+export function isValidAccessUrl(accessUrl?: string): accessUrl is string {
+  if (!accessUrl?.trim()) return false
+  try {
+    const url = new URL(accessUrl.trim())
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return false
+    const pathParts = url.pathname.toLowerCase().split('/').filter(Boolean)
+    return !url.hostname.toLowerCase().split('.').some((part) => part === 'example' || part.startsWith('example-'))
+      && !pathParts.some((part) => part === 'example' || part.startsWith('example-'))
+  } catch {
+    return false
+  }
 }
 
 export const products: Product[] = [
@@ -238,6 +252,7 @@ export const team = [
     role: 'CEO & Backend Lead',
     desc: 'Memimpin visi dan arah produk, validasi pasar, arsitektur Backend & API Hono, prioritas fitur dan koordinasi tim, serta riset produk pengguna (Product Researcher).',
     initial: 'AM',
+    photo: '/team/ardhian-profile.jpeg',
     badge: 'CEO',
     skills: ['Arah Produk', 'Backend & API', 'Hono & Drizzle', 'PostgreSQL', 'Product Research', 'Validasi Pasar'],
   },
@@ -246,6 +261,7 @@ export const team = [
     role: 'CTO & Frontend Lead',
     desc: 'Memimpin arsitektur teknologi platform, rekayasa frontend interaktif React 19, antarmuka pengguna, deployment server VPS, dan pemeliharaan sistem (Sysadmin).',
     initial: 'AR',
+    photo: '/team/aulia-ryansifa-wardah-profile.jpeg',
     badge: 'CTO',
     skills: ['React 19', 'Tailwind CSS', 'Vite & TypeScript', 'Sysadmin & VPS', 'Deployment & CI/CD'],
   },
@@ -254,6 +270,7 @@ export const team = [
     role: 'Product Manager & Head of Curation',
     desc: 'Pengelolaan katalog dan kurasi mutu aset/materi, riset kebutuhan pengguna (User Researcher), strategi pemasaran (Marketing), serta pengujian kualitas produk (Tester).',
     initial: 'KS',
+    photo: '/team/khoirunnisa-profile.jpeg',
     badge: 'PM',
     skills: ['Product Management', 'Kurasi Mutu Aset', 'User Research', 'Marketing & Kampanye', 'Quality Testing'],
   },
@@ -355,6 +372,7 @@ export function getCreatorProducts(): Product[] {
           fileAttachment: uc.fileAttachment,
           accessUrl: uc.accessUrl,
           buyerNote: uc.buyerNote,
+          videoUrl: uc.videoUrl,
         })
       }
     }
@@ -383,6 +401,7 @@ export function getCreatorProducts(): Product[] {
           fileAttachment: cp.fileAttachment,
           accessUrl: cp.accessUrl,
           buyerNote: cp.buyerNote,
+          videoUrl: cp.videoUrl,
         })
       }
     }

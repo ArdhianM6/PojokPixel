@@ -101,36 +101,28 @@ export function AboutPage({ playSound, navigate }: AboutPageProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
             {team.map((member) => (
-              <div className="bg-white border border-[#deddd6] rounded-2xl p-6 shadow-sm flex flex-col justify-between" key={member.name}>
-                <div>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="relative">
-                      <span className="w-14 h-14 rounded-full bg-[#303236] text-white font-[family-name:var(--font-display)] font-bold text-lg grid place-items-center">
-                        {member.initial}
-                      </span>
-                      <span className="absolute -bottom-1 -right-1 bg-[#e65416] text-white font-mono text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                        {member.badge}
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="font-[family-name:var(--font-display)] font-bold text-[#303236] text-base leading-tight">
-                        {member.name}
-                      </h3>
-                      <span className="text-xs text-[#e65416] font-semibold">{member.role}</span>
-                    </div>
+              <article className="team-profile-card" key={member.name}>
+                <div className="team-profile-heading">
+                  <div className="team-profile-avatar-wrap">
+                    <img className="team-profile-avatar" src={member.photo} alt={'Foto ' + member.name} loading="lazy" />
+                    <span className="about-team-badge">{member.badge}</span>
                   </div>
-                  <p className="text-xs text-[#555650] leading-relaxed mb-4">{member.desc}</p>
+                  <div className="team-profile-name">
+                    <h3 className="font-[family-name:var(--font-display)] font-bold text-[#303236] text-base leading-tight">{member.name}</h3>
+                    <span className="team-profile-role">{member.role}</span>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-1.5 pt-3 border-t border-[#deddd6]">
+                <p className="team-profile-desc">{member.desc}</p>
+                <div className="team-profile-skills">
                   {member.skills.map((s) => (
-                    <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-[#f5f5f2] border border-[#deddd6] text-[#303236]" key={s}>
+                    <span className="team-profile-skill" key={s}>
                       {s}
                     </span>
                   ))}
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         </div>

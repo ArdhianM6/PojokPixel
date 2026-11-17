@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import AuthPages from './AuthPages'
+import AuthPages, { AuthDialog } from './AuthPages'
 import { authClient } from './lib/auth-client'
 import { SkipToContent } from './components/SkipToContent'
 import ProductDetailPage from './components/ProductDetailPage'
@@ -12,7 +12,7 @@ import { OrdersPage } from './pages/OrdersPage'
 import type { OrderRecord } from './pages/OrdersPage'
 import { AboutPage } from './pages/AboutPage'
 import { FaqPage } from './pages/FaqPage'
-import { rupiah, getProductImageUrl } from './data/marketplace'
+import { rupiah, getProductImageUrl, isValidAccessUrl } from './data/marketplace'
 import type { Product } from './data/marketplace'
 
 export type IconName =
@@ -100,6 +100,7 @@ interface CartItem {
 function Storefront() {
   // Navigation State
   const [currentPath, setCurrentPath] = useState(() => window.location.pathname || '/')
+  const [authDialogMode, setAuthDialogMode] = useState<'login' | 'register' | null>(null)
   const [headerSearchQuery, setHeaderSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -500,6 +501,9 @@ function Storefront() {
   const initialCat = searchParams.get('cat') || 'Semua'
   const initialQ = searchParams.get('q') || ''
 
+  // Keep in-app navigation in sync with the top-level product route as well as direct URL visits.
+  if (currentPath.startsWith('/produk/')) return <ProductDetailPage />
+
   return (
     <>
       <SkipToContent />
@@ -508,17 +512,17 @@ function Storefront() {
       <div className="fixed top-0 left-0 h-[3px] bg-gradient-to-r from-[#e65416] to-[#f18a5d] z-[100] transition-[width] duration-75 ease-out" style={{ width: `${scrollProgress}%` }} />
 
       {/* Top Announcement Bar */}
-      <div className="min-h-[38px] bg-[#303236] text-[#f5f5f2] font-mono text-[11px] tracking-[.03em] relative z-40 py-1.5">
-        <div className="w-full max-w-[1220px] mx-auto px-6 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
+      <div className="hidden md:block min-h-[38px] bg-[#303236] text-[#f5f5f2] font-mono text-[11px] tracking-[.03em] relative z-40 py-1.5">
+        <div className="w-full max-w-[1220px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 xl:gap-6">
+          <div className="flex min-w-0 items-center gap-2.5 whitespace-nowrap">
             <Icon name="spark" size={14} className="text-[#e65416]" />
-            <span>Marketplace Produk Digital: Template Website, Poster, &amp; Pembelajaran Desain</span>
-            <span className="inline-flex items-center gap-1.5 bg-[rgba(230,84,22,0.22)] text-[#fca882] px-2 py-0.5 rounded-full text-[10px]">
+            <span>Marketplace aset digital untuk ide kreatif</span>
+            <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[rgba(230,84,22,0.22)] px-2 py-0.5 text-[10px] text-[#fca882]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#e65416] animate-pulse" />
               1.500+ File Terunduh
             </span>
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex shrink-0 items-center gap-2.5 whitespace-nowrap">
             <button
               type="button"
               onClick={toggleSound}
@@ -529,14 +533,14 @@ function Storefront() {
               <Icon name={soundEnabled ? 'volume' : 'volume-mute'} size={12} />
               <span>Suara: {soundEnabled ? 'ON' : 'OFF'}</span>
             </button>
-            <span>Karya lokal, akses instan selamanya</span>
+            <span className="hidden xl:inline">Karya lokal, akses instan selamanya</span>
           </div>
         </div>
       </div>
 
       {/* Main Site Header */}
       <header className={`${isScrolled ? "h-16 bg-[rgba(245,245,242,0.94)] backdrop-blur-md shadow-[0_4px_20px_-8px_rgba(48,50,54,0.08)]" : "h-[74px] bg-[#f5f5f2]"} border-b border-[#deddd6] sticky top-0 z-[45] transition-all duration-250 ease-in-out`}>
-        <div className="w-full max-w-[1220px] mx-auto px-6 h-full flex items-center justify-between gap-6">
+        <div className="w-full max-w-[1220px] mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4 sm:gap-6">
           <a
             className="inline-flex items-center gap-2.5 transition-transform hover:-translate-y-px flex-none"
             href="/"
@@ -778,7 +782,7 @@ function Storefront() {
                   )}
                 </div>
               ) : (
-                <a className="header-login" href="/login" onClick={() => playSound('click')}>
+                <a className="header-login" href="/login" onClick={(event) => { event.preventDefault(); playSound('click'); setAuthDialogMode('login') }}>
                   Masuk
                 </a>
               ))}
@@ -881,7 +885,7 @@ function Storefront() {
           <a
             href="/login"
             className="mobile-nav-item"
-            onClick={() => playSound('click')}
+            onClick={(event) => { event.preventDefault(); playSound('click'); setAuthDialogMode('login') }}
           >
             <Icon name="user" size={18} />
             <span>Akun</span>
@@ -1003,7 +1007,7 @@ function Storefront() {
                 <Icon name={soundEnabled ? 'volume' : 'volume-mute'} size={15} />
                 <span>Efek Suara: {soundEnabled ? 'Aktif' : 'Mati'}</span>
               </button>
-              <a href="/login" className="button button-dark w-full justify-center">
+              <a href="/login" className="button button-dark w-full justify-center" onClick={(event) => { event.preventDefault(); setMobileMenuOpen(false); setAuthDialogMode('login') }}>
                 Masuk ke Akun
               </a>
             </div>
@@ -1452,7 +1456,7 @@ function Storefront() {
           role="dialog"
           aria-modal="true"
         >
-          <div className="checkout-card" onClick={(e) => e.stopPropagation()}>
+          <div className={`checkout-card ${checkoutStep === 'success' ? 'checkout-card-success' : ''}`} onClick={(e) => e.stopPropagation()}>
             <div className="modal-drag-indicator" />
             <button
               type="button"
@@ -1586,9 +1590,9 @@ function Storefront() {
                           </button>
 
                           {/* 2. Tombol Link Cloud Akses jika kreator melampirkan link */}
-                          {p.accessUrl && (
+                          {isValidAccessUrl(p.accessUrl) && (
                             <a
-                              href={p.accessUrl}
+                              href={p.accessUrl.trim()}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="button button-outline delivery-link-btn"
@@ -1684,6 +1688,13 @@ function Storefront() {
           <span>{toast.message}</span>
         </div>
       ) : null}
+      {authDialogMode && (
+        <AuthDialog
+          mode={authDialogMode}
+          onClose={() => setAuthDialogMode(null)}
+          onModeChange={setAuthDialogMode}
+        />
+      )}
     </>
   )
 }

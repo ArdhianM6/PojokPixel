@@ -140,11 +140,7 @@ export function CatalogPage({
                 role="tab"
                 aria-selected={category === cat}
                 onClick={() => { playSound('click'); setCategory(cat) }}
-                className={`flex-shrink-0 inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-xs font-semibold border transition-all ${
-                  category === cat
-                    ? 'bg-[#303236] text-white border-[#303236]'
-                    : 'bg-white text-[#303236] border-[#deddd6] hover:border-[#303236]'
-                }`}
+                className={`catalog-filter-pill flex-shrink-0 inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-xs font-semibold border transition-all ${category === cat ? 'is-selected' : ''}`}
               >
                 <span>{cat}</span>
                 {cat === 'Favorit Saya' && favorites.length > 0 && (

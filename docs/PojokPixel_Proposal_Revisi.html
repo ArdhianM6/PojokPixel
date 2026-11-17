@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Proposal PojokPixel — Revisi</title>
+<style>
+@page { size: A4; margin: 17mm 18mm 18mm; @bottom-right { content: "POJOKPIXEL  •  " counter(page); color:#70736f; font:9pt Arial,sans-serif; } }
+* { box-sizing:border-box }
+body { margin:0; color:#292e33; font:10pt/1.55 Arial,"Segoe UI",sans-serif }
+h1,h2,h3 { font-family:Arial,sans-serif; line-height:1.2 }
+h1 { font-size:34pt; margin:0 0 8mm; color:#20262b }
+h2 { font-size:18pt; margin:0 0 5mm; color:#20262b; border-bottom:2px solid #b84010; padding-bottom:2mm }
+h3 { font-size:12pt; color:#a63a12; margin:5mm 0 2mm }
+p { margin:0 0 3mm }
+ul,ol { padding-left:6mm; margin:2mm 0 4mm }
+li { margin:1.5mm 0 }
+.cover { height:240mm; display:flex; flex-direction:column; justify-content:center; page-break-after:always; position:relative }
+.eyebrow { color:#b84010; font:bold 10pt Arial; letter-spacing:2px; text-transform:uppercase; margin-bottom:8mm }
+.subtitle { font-size:16pt; color:#596168; max-width:135mm }
+.cover-note { position:absolute; bottom:22mm; border-left:4px solid #b84010; padding:3mm 5mm; background:#f7f3ee; color:#464c50 }
+.chip { display:inline-block; margin-top:9mm; padding:2mm 4mm; color:#80300f; background:#f9e7dc; border-radius:4mm; font-size:9pt }
+.section { page-break-inside:avoid; margin-bottom:8mm }
+.callout { background:#f7f3ee; border-left:4px solid #b84010; padding:4mm 5mm; margin:4mm 0 }
+table { border-collapse:collapse; width:100%; margin:3mm 0 5mm; font-size:9pt }
+th { background:#30363a; color:#fff; text-align:left }
+td,th { padding:2.5mm 3mm; vertical-align:top; border:1px solid #d9d9d3 }
+tr { page-break-inside:avoid }
+.muted { color:#646c71; font-size:9pt }
+.page { page-break-before:always }
+</style>
+</head>
+<body>
+<section class="cover">
+ <div class="eyebrow">Proposal Produk Digital</div>
+ <h1>PojokPixel</h1>
+ <div class="subtitle">Marketplace aset kreatif dengan proposal yang diselaraskan pada implementasi aplikasi saat ini.</div>
+ <div class="chip">Revisi fitur dan status implementasi · 17 November 2026</div>
+ <div class="cover-note"><b>Dokumen ini merevisi proposal agar cocok dengan aplikasi.</b><br>Fitur demo, fitur aktif, dan rencana pengembangan dijelaskan terpisah.</div>
+</section>
+<section class="section">
+<h2>1. Ringkasan eksekutif</h2>
+<p>PojokPixel adalah prototipe marketplace aset digital untuk pelajar, kreator, UMKM, dan pemilik usaha. Aplikasi menyediakan katalog dan detail produk, akun dan profil, favorit, keranjang, simulasi checkout, riwayat pesanan lokal, area kreator berbasis browser, serta studio pixel art sederhana. Fondasi teknis memakai React, Hono, Drizzle ORM, dan PostgreSQL.</p>
+<div class="callout">Katalog yang tampil, keranjang/pesanan, dan data kreator masih memakai data contoh atau penyimpanan browser. Pembayaran belum terhubung ke payment gateway dan distribusi file belum menjadi layanan produksi.</div>
+</section>
+<section class="section">
+<h2>2. Masalah dan sasaran</h2>
+<p>Pengguna memerlukan aset visual siap pakai untuk tugas, promosi, dan pekerjaan kreatif, sementara pilihan, format, harga, dan ketentuan penggunaan sering tersebar. PojokPixel menguji pengalaman menemukan aset digital dalam satu katalog dengan informasi produk yang mudah dipahami.</p>
+<p>Sasaran awal yang diusulkan adalah pelajar/mahasiswa, UMKM, kreator/freelancer, serta pengajar dan komunitas. Segmen ini perlu divalidasi melalui wawancara dan uji penggunaan.</p>
+</section>
+<section class="section">
+<h2>3. Fitur pada aplikasi</h2>
+<table><thead><tr><th>Area</th><th>Kemampuan dan status saat ini</th></tr></thead><tbody>
+<tr><td>Beranda dan katalog</td><td>Jelajah, kategori, pencarian/filter, sorotan dan detail produk. Antarmuka berfungsi; katalog utama memakai data contoh frontend.</td></tr>
+<tr><td>Akun</td><td>Daftar/masuk dan pelengkapan profil melalui Better Auth. Tidak ada role buyer/creator/admin sebagai izin akun.</td></tr>
+<tr><td>Favorit dan keranjang</td><td>Berfungsi di browser, disimpan di localStorage.</td></tr>
+<tr><td>Checkout dan pesanan</td><td>Pilihan metode dan layar sukses merupakan simulasi. Pesanan demo tersimpan lokal; tidak ada konfirmasi gateway.</td></tr>
+<tr><td>Area kreator</td><td>Profil serta buat/edit/hapus listing berbasis localStorage; belum ada moderasi atau marketplace multi-vendor di server.</td></tr>
+<tr><td>Studio pixel art</td><td>Editor pixel sisi-klien dengan ekspor PNG.</td></tr>
+<tr><td>API dan data</td><td>Hono memiliki health check, endpoint produk/tim, dan handler Better Auth. Drizzle/PostgreSQL tersedia; katalog antarmuka belum mengambil sumber utama dari API.</td></tr>
+</tbody></table>
+<p class="muted">Angka penjualan, rating, testimoni, badge, dan label pemasaran dari data frontend adalah konten contoh, bukan metrik bisnis terverifikasi. Listing kreator lokal tidak tersinkron antarperangkat.</p>
+</section>
+<section class="section page">
+<h2>4. Peran dan arsitektur</h2>
+<p>Akun saat ini adalah akun pengguna umum untuk autentikasi dan profil. Belum ada sistem hak akses yang membedakan pembeli, kreator, dan administrator. Area kreator merupakan alur antarmuka lokal, bukan bukti persetujuan akun atau publikasi listing terpusat.</p>
+<p>Proposal menggunakan istilah <b>pengguna</b> dan <b>pengunjung</b> untuk prototipe. “Kreator” adalah alur lokal, bukan role akun dengan izin backend. Role, pemeriksaan izin, moderasi, dan pengelolaan vendor menjadi pekerjaan lanjutan.</p>
+<ul><li><b>Frontend:</b> React dan TypeScript.</li><li><b>API:</b> Hono untuk health check, produk, tim, dan autentikasi.</li><li><b>Data:</b> Drizzle ORM dan PostgreSQL tersedia; sebagian katalog dan interaksi memakai data lokal.</li><li><b>Pembayaran:</b> checkout simulasi; pilihan metode di UI bukan bukti integrasi.</li><li><b>Distribusi:</b> unduhan dan proteksi file belum menjadi layanan produksi.</li></ul>
+</section>
+<section class="section">
+<h2>5. Model usaha dan asumsi</h2>
+<p>Model yang diusulkan adalah penjualan aset satuan dan bundel, dengan produk gratis sebagai pengenalan katalog.</p>
+<table><thead><tr><th>Jenis</th><th>Rentang harga usulan</th></tr></thead><tbody>
+<tr><td>Template website</td><td>Rp49.000–Rp199.000</td></tr><tr><td>Poster digital</td><td>Rp15.000–Rp39.000</td></tr><tr><td>Materi pembelajaran digital</td><td>Rp50.000–Rp99.000</td></tr><tr><td>Bundel produk</td><td>Rp59.000–Rp249.000</td></tr>
+</tbody></table>
+<p>Harga, komisi, dan bagi hasil adalah hipotesis bisnis. Proposal awal mengusulkan porsi kreator sekitar 80% dan platform 20%; aplikasi belum menghitung atau membayar pembagian tersebut.</p>
+<p>Anggaran pada tabel proposal berjumlah <b>Rp16.000.000 untuk 12 bulan</b>: hosting Rp4 juta, domain/email/layanan teknis Rp1 juta, kurasi katalog Rp4 juta, pemasaran Rp3 juta, administrasi/transaksi Rp1 juta, dan cadangan Rp3 juta. Ini estimasi, bukan pengeluaran yang telah dilakukan. Target pendanaan dan transaksi bukan hasil aktual.</p>
+</section>
+<section class="section">
+<h2>6. Tim</h2>
+<table><thead><tr><th>Anggota</th><th>Peran yang diusulkan</th></tr></thead><tbody>
+<tr><td>Ardhian Maulana Tanjung</td><td>CEO, riset produk/pasar, backend, API, prioritas fitur, koordinasi</td></tr>
+<tr><td>Aulia Ryansifa Wardah</td><td>CTO, frontend, deployment, pemeliharaan, sysadmin</td></tr>
+<tr><td>Khoirunnisa Salsabila Osmon</td><td>Manajemen produk, riset pengguna, marketing, kurasi konten/katalog, pengujian</td></tr>
+</tbody></table>
+<p class="muted">Pembagian ini adalah usulan kerja tim, bukan role akses dalam aplikasi.</p>
+</section>
+<section class="section page">
+<h2>7. Tahapan pengembangan</h2>
+<ol><li><b>Validasi dan stabilisasi:</b> uji katalog/studio, perbaiki responsivitas dan alur akun.</li><li><b>MVP operasional:</b> jadikan API/database sumber katalog, tambah role dan izin, pesanan server, pengelolaan produk, dan kebijakan lisensi.</li><li><b>Transaksi nyata:</b> integrasikan gateway, verifikasi webhook, rekonsiliasi, refund, invoice, dan distribusi file terkendali.</li><li><b>Uji kreator:</b> unggah server, kurasi/moderasi, persetujuan kreator, komisi, dan laporan.</li><li><b>Pertumbuhan:</b> uji harga, bundel, referral, analitik, ulasan terverifikasi, dan ekspansi katalog.</li></ol>
+<p>Jadwal final perlu mempertimbangkan kapasitas tim, keamanan, dan biaya penyedia layanan.</p>
+</section>
+<section class="section">
+<h2>8. Risiko dan tindak lanjut</h2>
+<table><thead><tr><th>Kesenjangan</th><th>Tindak lanjut</th></tr></thead><tbody>
+<tr><td>Data lokal tidak tersinkron dan dapat hilang</td><td>Pindahkan data penting ke API/database dan siapkan backup.</td></tr>
+<tr><td>Checkout demo dapat disalahartikan sebagai pembayaran</td><td>Tandai simulasi dengan jelas sampai gateway siap.</td></tr>
+<tr><td>Unduhan demo belum menjamin distribusi produk</td><td>Sediakan penyimpanan file, otorisasi, dan pencatatan akses.</td></tr>
+<tr><td>Belum ada role kreator/admin</td><td>Tetapkan matriks akses, validasi server, dan proses persetujuan.</td></tr>
+<tr><td>Metrik contoh tampak seperti klaim aktual</td><td>Gunakan data terverifikasi atau labeli sebagai contoh.</td></tr>
+<tr><td>Lisensi dan hak cipta belum menjadi alur operasional</td><td>Minta bukti hak distribusi serta proses laporan/takedown.</td></tr>
+<tr><td>Asumsi biaya dan pendapatan belum tervalidasi</td><td>Uji biaya, harga, permintaan, dan komisi sebelum peluncuran.</td></tr>
+</tbody></table>
+</section>
+<section class="section">
+<h2>9. Penutup</h2>
+<p>PojokPixel adalah prototipe marketplace dengan autentikasi yang terhubung ke backend dan beberapa pengalaman produk yang berjalan lokal di browser. Proposal ini mempertahankan arah marketplace aset digital sambil membedakan fitur yang telah dibuat, batas demo, dan pekerjaan sebelum menerima pembayaran atau menjalankan marketplace multi-kreator secara nyata.</p>
+</section>
+</body></html>

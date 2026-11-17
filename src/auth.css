@@ -10,3 +10,11 @@
 .github-mark{width:17px;height:17px;flex:none}.auth-arrow{display:inline-flex;align-items:center;color:#f18a5d}.auth-arrow svg{width:18px;height:18px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 .auth-form input{border-radius:12px;transition:border-color .2s,box-shadow .2s}.auth-form input:focus{box-shadow:0 0 0 3px #e6541620}.ticker:hover .ticker-track{animation-play-state:paused}.hero-art:hover .art-orange-card{animation-play-state:paused}
+/* Authentication dialogs keep the current storefront visible behind the form. */
+.auth-modal-page{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:24px;background:rgba(32,35,38,.62);backdrop-filter:blur(5px)}
+.auth-modal-page .auth-aside{display:none}
+.auth-modal-page .auth-main{width:min(100%,540px);min-height:0;max-height:calc(100dvh - 48px);overflow-y:auto;display:block;padding:42px 44px 32px;background:#f5f5f2;border:1px solid #ffffff80;border-radius:18px;box-shadow:0 24px 80px #10121455}
+.auth-modal-page .auth-form-card,.auth-modal-page .register-card{width:100%;padding:8px 0}
+.auth-modal-close{position:absolute;top:13px;right:15px;z-index:2;width:36px;height:36px;border:1px solid #dedcd5;border-radius:50%;background:#fff;color:#4a4d50;font-size:23px;line-height:1;cursor:pointer}
+.auth-modal-close:hover{border-color:#b84010;color:#b84010}
+@media(max-width:560px){.auth-modal-page{padding:12px}.auth-modal-page .auth-main{max-height:calc(100dvh - 24px);padding:43px 22px 24px;border-radius:14px}.auth-modal-page .auth-field-pair{grid-template-columns:1fr}.auth-modal-page .social-buttons{grid-template-columns:1fr}.auth-modal-page .auth-heading h1{font-size:32px}}

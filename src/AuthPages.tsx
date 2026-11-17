@@ -83,8 +83,14 @@ function Brand() {
   return <a className="auth-brand" href="/"><img src="/pojokpixel-mark.svg" alt=""/><span>pojok<span>pixel</span><i>.</i></span></a>
 }
 
-function AuthShell({ children, kind }: { children: ReactNode; kind: 'login' | 'register' | 'message' }) {
-  return <div className={`auth-page auth-${kind} motion-safe:animate-panel-in`}>
+function AuthShell({ children, kind, modal = false, onClose }: { children: ReactNode; kind: 'login' | 'register' | 'message'; modal?: boolean; onClose?: () => void }) {
+  return <div
+    className={`auth-page auth-${kind} motion-safe:animate-panel-in${modal ? ' auth-modal-page' : ''}`}
+    role={modal ? 'dialog' : undefined}
+    aria-modal={modal ? true : undefined}
+    aria-label={modal ? kind === 'register' ? 'Daftar akun PojokPixel' : 'Masuk ke akun PojokPixel' : undefined}
+    onMouseDown={modal ? (event) => { if (event.target === event.currentTarget) onClose?.() } : undefined}
+  >
     <aside className="auth-aside">
       <Brand/>
       <div className="auth-aside-art"><div className="auth-aside-pixel motion-safe:animate-pixel-float">PP</div><span className="auth-orbit auth-orbit-one"/><span className="auth-orbit auth-orbit-two"/><span className="auth-spark">*</span></div>
@@ -92,9 +98,11 @@ function AuthShell({ children, kind }: { children: ReactNode; kind: 'login' | 'r
       <span className="auth-aside-foot">DESIGN - DIGITAL - PIXEL</span>
     </aside>
     <main className="auth-main">
-      <a className="auth-back" href="/">Kembali ke PojokPixel <ArrowUpRight/></a>
+      {modal
+        ? <button className="auth-modal-close" type="button" onClick={onClose} aria-label="Tutup dialog">×</button>
+        : <a className="auth-back" href="/">Kembali ke PojokPixel <ArrowUpRight/></a>}
       {children}
-      <p className="auth-legal">Dengan melanjutkan, kamu menyetujui ketentuan dan kebijakan privasi PojokPixel.</p>
+      {!modal && <p className="auth-legal">Dengan melanjutkan, kamu menyetujui ketentuan dan kebijakan privasi PojokPixel.</p>}
     </main>
   </div>
 }
@@ -175,8 +183,14 @@ function ProfileSettings() {
   </div></AuthShell>
 }
 
-export default function AuthPages() {
-  const path = window.location.pathname
+type AuthPagesProps = {
+  modalMode?: 'login' | 'register'
+  onClose?: () => void
+  onModeChange?: (mode: 'login' | 'register') => void
+}
+
+export default function AuthPages({ modalMode, onClose, onModeChange }: AuthPagesProps = {}) {
+  const path = modalMode ? `/${modalMode}` : window.location.pathname
   const { data: session, isPending } = authClient.useSession()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -184,6 +198,18 @@ export default function AuthPages() {
   const [captchaToken, setCaptchaToken] = useState('')
   const [captchaResetKey, setCaptchaResetKey] = useState(0)
   const user = session?.user
+  useEffect(() => {
+    if (!modalMode) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose?.() }
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [modalMode, onClose])
+
   useEffect(() => {
     if (path === '/auth/continue' && !isPending) {
       if (!user) window.location.replace('/login')
@@ -199,13 +225,14 @@ export default function AuthPages() {
       else window.location.replace(path === '/onboarding' ? '/profile' : '/')
     }
     if ((path === '/login' || path === '/register') && !isPending && user) {
-      window.location.replace('/')
+      if (modalMode) onClose?.()
+      else window.location.replace('/')
     }
     if (path === '/profile' && !isPending && !user) window.location.replace('/login')
-  }, [path, isPending, user])
+  }, [path, isPending, user, modalMode, onClose])
 
   if (path === '/auth/continue' || path === '/dashboard' || path === '/onboarding' || ((path === '/profile' || path === '/login' || path === '/register') && (isPending || (path === '/profile' && !user)))) {
-    return <AuthShell kind="message"><div className="auth-loading"><span className="auth-spinner"/> Menyiapkan akunmu...</div></AuthShell>
+    return <AuthShell kind="message" modal={!!modalMode} onClose={onClose}><div className="auth-loading"><span className="auth-spinner"/> Menyiapkan akunmu...</div></AuthShell>
   }
 
   if (path === '/register/success') {
@@ -257,7 +284,7 @@ export default function AuthPages() {
       } catch { setError('Tidak dapat terhubung ke server email atau API. Periksa konfigurasi dan coba lagi.') }
       finally { setBusy(false); setCaptchaToken(''); setCaptchaResetKey((key) => key + 1) }
     }
-    return <AuthShell kind="register"><div className="auth-form-card register-card"><AuthHeading eyebrow="BUAT AKUN POJOKPIXEL" title="Mulai berkarya." detail="Buat akun gratis dan simpan semua inspirasi di satu tempat."/><SocialButtons onError={setError} busy={busy} setBusy={setBusy}/><div className="auth-divider"><span/>atau daftar dengan email<span/></div><form className="auth-form" onSubmit={(event) => void register(event)}><div className="auth-field-pair"><label>Nama lengkap<input name="name" autoComplete="name" required maxLength={80} placeholder="Nama kamu"/></label><label>Username<input name="username" autoComplete="username" required minLength={3} maxLength={24} pattern="[A-Za-z0-9_]+" placeholder="pixelkreatif"/></label></div><label>Tanggal lahir<input name="birthDate" type="date" max={today} required/></label><label>Email<input name="email" type="email" autoComplete="email" required placeholder="nama@email.com"/></label><div className="auth-field-pair"><label>Password<input name="password" type="password" autoComplete="new-password" minLength={8} required placeholder="Minimal 8 karakter"/></label><label>Ulangi password<input name="confirmPassword" type="password" autoComplete="new-password" minLength={8} required placeholder="Ketik ulang password"/></label></div><Turnstile onToken={setCaptchaToken} resetKey={captchaResetKey}/>{error && <p className="auth-error motion-safe:animate-pop-in" role="alert">{error}</p>}{success && <p className="auth-success motion-safe:animate-pop-in" role="status">{success}</p>}<button className="auth-submit rounded-lg transition duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0" disabled={busy || !captchaToken || !turnstileSiteKey}>{busy ? 'Membuat akun...' : success ? 'Cek email kamu' : 'Daftar dengan email'} <ArrowRight/></button></form><p className="auth-switch">Sudah punya akun? <a href="/login">Masuk</a></p></div></AuthShell>
+    return <AuthShell kind="register" modal={!!modalMode} onClose={onClose}><div className="auth-form-card register-card"><AuthHeading eyebrow="BUAT AKUN POJOKPIXEL" title="Mulai berkarya." detail="Buat akun gratis dan simpan semua inspirasi di satu tempat."/><SocialButtons onError={setError} busy={busy} setBusy={setBusy}/><div className="auth-divider"><span/>atau daftar dengan email<span/></div><form className="auth-form" onSubmit={(event) => void register(event)}><div className="auth-field-pair"><label>Nama lengkap<input name="name" autoComplete="name" required maxLength={80} placeholder="Nama kamu"/></label><label>Username<input name="username" autoComplete="username" required minLength={3} maxLength={24} pattern="[A-Za-z0-9_]+" placeholder="pixelkreatif"/></label></div><label>Tanggal lahir<input name="birthDate" type="date" max={today} required/></label><label>Email<input name="email" type="email" autoComplete="email" required placeholder="nama@email.com"/></label><div className="auth-field-pair"><label>Password<input name="password" type="password" autoComplete="new-password" minLength={8} required placeholder="Minimal 8 karakter"/></label><label>Ulangi password<input name="confirmPassword" type="password" autoComplete="new-password" minLength={8} required placeholder="Ketik ulang password"/></label></div><Turnstile onToken={setCaptchaToken} resetKey={captchaResetKey}/>{error && <p className="auth-error motion-safe:animate-pop-in" role="alert">{error}</p>}{success && <p className="auth-success motion-safe:animate-pop-in" role="status">{success}</p>}<button className="auth-submit rounded-lg transition duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0" disabled={busy || !captchaToken || !turnstileSiteKey}>{busy ? 'Membuat akun...' : success ? 'Cek email kamu' : 'Daftar dengan email'} <ArrowRight/></button></form><p className="auth-switch">Sudah punya akun? <a href="/login" onClick={modalMode ? (event) => { event.preventDefault(); onModeChange?.('login') } : undefined}>Masuk</a></p></div></AuthShell>
   }
 
   const login = async (event: FormEvent<HTMLFormElement>) => {
@@ -272,5 +299,9 @@ export default function AuthPages() {
   }
   const query = new URLSearchParams(window.location.search)
   const initialMessage = query.get('verified') === '1' ? 'Email berhasil diverifikasi. Silakan masuk ke akunmu.' : query.has('oauthError') ? 'Login melalui penyedia belum berhasil. Coba lagi atau gunakan email.' : ''
-  return <AuthShell kind="login"><div className="auth-form-card"><AuthHeading eyebrow="SENANG MELIHATMU LAGI" title="Masuk ke akun." detail="Lanjutkan menjelajahi ide dan karya pilihanmu."/><SocialButtons onError={setError} busy={busy} setBusy={setBusy}/><div className="auth-divider"><span/>atau masuk dengan email<span/></div><form className="auth-form" onSubmit={(event) => void login(event)}><label>Email<input name="email" type="email" autoComplete="email" required placeholder="nama@email.com"/></label><label>Password<input name="password" type="password" autoComplete="current-password" required placeholder="Password akunmu"/></label>{initialMessage && <p className="auth-success motion-safe:animate-pop-in" role="status">{initialMessage}</p>}{error && <p className="auth-error motion-safe:animate-pop-in" role="alert">{error}</p>}<button className="auth-submit rounded-lg transition duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0" disabled={busy}>{busy ? 'Memeriksa akun...' : 'Masuk'} <ArrowRight/></button></form><p className="auth-switch">Belum punya akun? <a href="/register">Daftar sekarang</a></p></div></AuthShell>
+  return <AuthShell kind="login" modal={!!modalMode} onClose={onClose}><div className="auth-form-card"><AuthHeading eyebrow="SENANG MELIHATMU LAGI" title="Masuk ke akun." detail="Lanjutkan menjelajahi ide dan karya pilihanmu."/><SocialButtons onError={setError} busy={busy} setBusy={setBusy}/><div className="auth-divider"><span/>atau masuk dengan email<span/></div><form className="auth-form" onSubmit={(event) => void login(event)}><label>Email<input name="email" type="email" autoComplete="email" required placeholder="nama@email.com"/></label><label>Password<input name="password" type="password" autoComplete="current-password" required placeholder="Password akunmu"/></label>{initialMessage && <p className="auth-success motion-safe:animate-pop-in" role="status">{initialMessage}</p>}{error && <p className="auth-error motion-safe:animate-pop-in" role="alert">{error}</p>}<button className="auth-submit rounded-lg transition duration-200 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0" disabled={busy}>{busy ? 'Memeriksa akun...' : 'Masuk'} <ArrowRight/></button></form><p className="auth-switch">Belum punya akun? <a href="/register" onClick={modalMode ? (event) => { event.preventDefault(); onModeChange?.('register') } : undefined}>Daftar sekarang</a></p></div></AuthShell>
+}
+
+export function AuthDialog({ mode, onClose, onModeChange }: { mode: 'login' | 'register'; onClose: () => void; onModeChange: (mode: 'login' | 'register') => void }) {
+  return <AuthPages modalMode={mode} onClose={onClose} onModeChange={onModeChange} />
 }

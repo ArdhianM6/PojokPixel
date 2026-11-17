@@ -37,12 +37,28 @@ interface CustomProject {
   }
   accessUrl?: string
   buyerNote?: string
+  videoUrl?: string
 }
 
 interface CreatorPageProps {
   playSound: (type: 'click' | 'pop' | 'success' | 'delete') => void
   navigate: (path: string) => void
   notify: (msg: string) => void
+}
+
+type CreatorIconName = 'products' | 'revenue' | 'rating' | 'live' | 'catalog' | 'edit' | 'delete'
+
+function CreatorIcon({ name, size = 16 }: { name: CreatorIconName; size?: number }) {
+  const shapes: Record<CreatorIconName, React.ReactNode> = {
+    products: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M8 4v16" /></>,
+    revenue: <><path d="m3 17 6-6 4 4 8-9" /><path d="M15 6h6v6" /></>,
+    rating: <polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2" />,
+    live: <><circle cx="12" cy="12" r="9" /><path d="m8 12 2.5 2.5L16 9" /></>,
+    catalog: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18" /></>,
+    edit: <><path d="m16 4 4 4L9 19l-5 1 1-5L16 4Z" /><path d="m14 6 4 4" /></>,
+    delete: <><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6" /><path d="M10 11v5m4-5v5" /></>,
+  }
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{shapes[name]}</svg>
 }
 
 /**
@@ -150,6 +166,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
   } | null>(null)
   const [projAccessUrl, setProjAccessUrl] = useState('')
   const [projBuyerNote, setProjBuyerNote] = useState('')
+  const [projVideoUrl, setProjVideoUrl] = useState('')
   const projectFileRef = useRef<HTMLInputElement>(null)
 
   // Broadcast on mount so HomePage and CatalogPage immediately reflect existing creator projects
@@ -223,6 +240,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
     setAttachedFile(null)
     setProjAccessUrl('')
     setProjBuyerNote('')
+    setProjVideoUrl('')
     playSound('pop')
     setIsAddModalOpen(true)
   }
@@ -255,6 +273,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
     setAttachedFile(project.fileAttachment || null)
     setProjAccessUrl(project.accessUrl || '')
     setProjBuyerNote(project.buyerNote || '')
+    setProjVideoUrl(project.videoUrl || '')
 
     playSound('pop')
     setIsAddModalOpen(true)
@@ -349,6 +368,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
           fileAttachment: attachedFile || undefined,
           accessUrl: projAccessUrl.trim() || undefined,
           buyerNote: projBuyerNote.trim() || undefined,
+          videoUrl: projVideoUrl.trim() || undefined,
         }
       })
 
@@ -382,6 +402,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
           fileAttachment: attachedFile || undefined,
           accessUrl: projAccessUrl.trim() || undefined,
           buyerNote: projBuyerNote.trim() || undefined,
+          videoUrl: projVideoUrl.trim() || undefined,
         }
 
         const exists = storedCatalog.some((item) => item.id === editingProjectId)
@@ -417,6 +438,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
         fileAttachment: attachedFile || undefined,
         accessUrl: projAccessUrl.trim() || undefined,
         buyerNote: projBuyerNote.trim() || undefined,
+        videoUrl: projVideoUrl.trim() || undefined,
       }
 
       const updated = [newProject, ...myProjects]
@@ -445,6 +467,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
           fileAttachment: newProject.fileAttachment,
           accessUrl: newProject.accessUrl,
           buyerNote: newProject.buyerNote,
+          videoUrl: newProject.videoUrl,
         }
         localStorage.setItem('pojokpixel:user_catalog', JSON.stringify([catalogItem, ...storedCatalog]))
       } catch {
@@ -804,16 +827,17 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
               <div className="creator-banner-right">
                 <button
                   type="button"
-                  className="button button-orange"
-                  style={{ height: '46px', padding: '0 20px', fontSize: '13px' }}
+                  className="button button-orange creator-add-main"
+                  style={{ height: '42px', padding: '0 16px', fontSize: '13px' }}
                   onClick={handleOpenCreateModal}
                 >
-                  <span>+ Tambah Project Baru</span>
+                  <span aria-hidden="true">+</span><span>Tambah produk</span>
                 </button>
 
                 <button
                   type="button"
                   className="creator-reset-btn"
+                  aria-label="Uji tampilan akun pembeli"
                   title="Klik untuk menguji tampilan akun pembeli biasa"
                   onClick={handleResetToBuyer}
                 >
@@ -825,28 +849,32 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
             {/* Metrics Overview */}
             <div className="creator-metrics-grid">
               <div className="creator-metric-item">
-                <span className="metric-label">TOTAL PROJECT DI LAPAK</span>
+                <span className="creator-metric-icon"><CreatorIcon name="products" /></span>
+                <span className="metric-label">Produk di lapak</span>
                 <strong className="metric-val">{myProjects.length}</strong>
-                <small className="metric-sub">Karya live di katalog</small>
+                <small className="metric-sub">Karya kamu</small>
               </div>
               <div className="creator-metric-item">
-                <span className="metric-label">BAGI HASIL KREATOR</span>
+                <span className="creator-metric-icon"><CreatorIcon name="revenue" /></span>
+                <span className="metric-label">Bagi hasil</span>
                 <strong className="metric-val" style={{ color: '#e65416' }}>
                   80%
                 </strong>
-                <small className="metric-sub">Hak penjualan kreator (20% platform)</small>
+                <small className="metric-sub">80% untuk kreator</small>
               </div>
               <div className="creator-metric-item">
-                <span className="metric-label">RATING KREATOR</span>
+                <span className="creator-metric-icon"><CreatorIcon name="rating" /></span>
+                <span className="metric-label">Rating kreator</span>
                 <strong className="metric-val">5.0 ★</strong>
                 <small className="metric-sub">Standar kurasi resmi</small>
               </div>
               <div className="creator-metric-item">
-                <span className="metric-label">STATUS TAYANG</span>
+                <span className="creator-metric-icon"><CreatorIcon name="live" /></span>
+                <span className="metric-label">Status lapak</span>
                 <strong className="metric-val" style={{ color: '#10b981' }}>
                   Live Publik
                 </strong>
-                <small className="metric-sub">Tampil di Beranda & Katalog</small>
+                <small className="metric-sub">Tampil di katalog</small>
               </div>
             </div>
 
@@ -856,30 +884,10 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
                 <div>
                   <span className="creator-eyebrow">KATALOG SAYA</span>
                   <h2 style={{ fontFamily: 'var(--display)', fontSize: '22px', fontWeight: 700, margin: '4px 0 0' }}>
-                    Project & Karya Digital Anda
+                    Produk saya
                   </h2>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button
-                    type="button"
-                    className="button button-secondary"
-                    style={{ fontSize: '13px' }}
-                    onClick={() => {
-                      playSound('click')
-                      navigate('/katalog')
-                    }}
-                  >
-                    <span>Buka Katalog Pembeli →</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="button button-dark"
-                    style={{ fontSize: '13px' }}
-                    onClick={handleOpenCreateModal}
-                  >
-                    <span>+ Tambah Project</span>
-                  </button>
-                </div>
+                <span className="creator-products-count">{myProjects.length} produk</span>
               </div>
 
               {myProjects.length === 0 ? (
@@ -940,6 +948,8 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
                               type="button"
                               className="button button-outline"
                               style={{ height: '28px', padding: '0 8px', fontSize: '11px', borderRadius: '4px' }}
+                              aria-label={`Lihat ${proj.name} di katalog`}
+                              title="Buka katalog"
                               onClick={() => {
                                 playSound('click')
                                 navigate('/katalog')
@@ -1276,6 +1286,18 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
                     value={projDesc}
                     onChange={(e) => setProjDesc(e.target.value)}
                   />
+                </div>
+
+                <div className="creator-form-field full-col">
+                  <label htmlFor="proj-video-url">Video preview produk <small>(opsional)</small></label>
+                  <input
+                    id="proj-video-url"
+                    type="url"
+                    placeholder="https://youtu.be/... atau tautan video .mp4"
+                    value={projVideoUrl}
+                    onChange={(e) => setProjVideoUrl(e.target.value)}
+                  />
+                  <small style={{ color: '#7a7c82' }}>Tautan YouTube, Vimeo, atau video langsung .mp4/.webm akan ditampilkan di halaman detail produk.</small>
                 </div>
 
                 {/* ====================================================================

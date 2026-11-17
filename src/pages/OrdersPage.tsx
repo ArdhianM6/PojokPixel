@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { usePageMeta } from '../hooks/usePageMeta'
-import { rupiah, getProductImageUrl } from '../data/marketplace'
+import { rupiah, getProductImageUrl, isValidAccessUrl } from '../data/marketplace'
 import type { Product } from '../data/marketplace'
 
 export interface OrderItem {
@@ -171,17 +171,14 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
                 </button>
               )}
             </div>
-            <div className="flex gap-1.5 flex-wrap">
+            <div className="orders-category-pills">
               {['Semua', 'Template Website', 'Template Poster', 'Pembelajaran Digital', 'Bundel Produk'].map((cat) => (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => { playSound('click'); setSelectedCategory(cat) }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                    selectedCategory === cat
-                      ? 'bg-[#303236] text-white border-[#303236]'
-                      : 'bg-white text-[#52555a] border-[#deddd6] hover:border-[#303236] hover:text-[#303236]'
-                  }`}
+                  className={`category-pill-btn ${selectedCategory === cat ? 'is-active' : ''}`}
+                  aria-pressed={selectedCategory === cat}
                 >
                   {cat}
                 </button>
@@ -327,9 +324,9 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
                           </button>
 
                           {/* 2. Link Cloud Template */}
-                          {p.accessUrl && (
+                          {isValidAccessUrl(p.accessUrl) && (
                             <a
-                              href={p.accessUrl}
+                              href={p.accessUrl.trim()}
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={() => playSound('click')}
