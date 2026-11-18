@@ -68,7 +68,6 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
     }
   }, [ordersVersion])
 
-  const totalProductsCount = useMemo(() => orders.reduce((total, ord) => total + ord.items.length, 0), [orders])
 
   const filteredOrders = useMemo(() => {
     const q = searchQuery.toLowerCase().trim()
@@ -92,8 +91,13 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
 
   const handleDownloadAllFromOrder = (order: OrderRecord) => {
     playSound('pop')
-    notify(`Memulai pengunduhan ${order.items.length} berkas sekaligus...`)
-    order.items.forEach((item, idx) => {
+    const downloadableItems = order.items.filter((item) => item.product.fileAttachment?.fileData?.startsWith('data:'))
+    if (!downloadableItems.length) {
+      notify('Belum ada berkas yang dilampirkan pada pesanan ini.')
+      return
+    }
+    notify(`Memulai pengunduhan ${downloadableItems.length} berkas...`)
+    downloadableItems.forEach((item, idx) => {
       setTimeout(() => { onDownloadAsset(item.product) }, idx * 400)
     })
   }
@@ -122,31 +126,14 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 font-mono text-[10.5px] tracking-widest text-[#e65416] font-bold mb-2 uppercase">
             <span className="w-2 h-2 rounded-full bg-[#e65416] animate-pulse" />
-            AKSES LISENSI RESMI &amp; UNDUHAN SEUMUR HIDUP
+            Daftar pesanan
           </div>
           <h1 className="font-[family-name:var(--font-display)] text-3xl md:text-4xl font-bold text-[#303236] tracking-tight mb-2">
             Riwayat Pembelian &amp; Unduhan
           </h1>
           <p className="text-sm text-[#555650] leading-relaxed max-w-2xl">
-            Seluruh berkas project digital yang pernah kamu beli tersimpan rapi di sini. Jika file di komputermu terhapus atau hilang,
-            kamu bisa <strong className="text-[#303236]">mengunduh ulang berkas aslinya kapan saja</strong> tanpa dipungut biaya tambahan.
+            Pesanan yang tersimpan di akunmu tampil di sini. Ketersediaan file atau tautan akses mengikuti informasi pada setiap produk.
           </p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {[
-            { label: 'TOTAL PRODUK DIBELI', val: totalProductsCount, sub: 'File digital tersimpan', color: 'text-[#303236]' },
-            { label: 'TOTAL PESANAN LUNAS', val: orders.length, sub: 'Transaksi terverifikasi', color: 'text-[#303236]' },
-            { label: 'STATUS LISENSI', val: '100% Aktif', sub: 'Personal & Komersial', color: 'text-emerald-600' },
-            { label: 'JAMINAN UNDUHAN', val: 'Lifetime', sub: 'Akses tanpa batas waktu', color: 'text-[#e65416]' },
-          ].map((s) => (
-            <div key={s.label} className="bg-white border border-[#deddd6] rounded-xl p-4 shadow-sm hover:shadow-md transition">
-              <span className="block font-mono text-[9px] font-bold tracking-wider text-[#72736c] mb-1">{s.label}</span>
-              <strong className={`block text-2xl font-[family-name:var(--font-display)] font-bold ${s.color}`}>{s.val}</strong>
-              <small className="block text-[11px] text-[#9a9b94] mt-0.5">{s.sub}</small>
-            </div>
-          ))}
         </div>
 
         {/* Filter & Search */}
@@ -256,13 +243,13 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
                     <strong className="font-[family-name:var(--font-display)] text-base font-bold text-[#303236]">
                       {rupiah(order.totalAmount)}
                     </strong>
-                    {order.status === 'completed' && order.items.length > 1 && (
+                    {order.status === 'completed' && order.items.filter((item) => item.product.fileAttachment?.fileData?.startsWith('data:')).length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleDownloadAllFromOrder(order)}
                         className="button button-dark inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-semibold transition active:scale-95"
                       >
-                        <span>Unduh Semua ({order.items.length})</span>
+                        <span>Unduh berkas terlampir</span>
                       </button>
                     )}
                   </div>
@@ -298,10 +285,7 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
                               </a>
                             </h3>
                             <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                              <span className="text-[11.5px] text-emerald-700 font-semibold inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-                                🛡️ Lisensi Komersial &amp; Personal Resmi Aktif
-                              </span>
-                              {p.fileAttachment?.fileName && (
+                              {p.fileAttachment?.fileData?.startsWith('data:') && p.fileAttachment.fileName && (
                                 <span className="text-[11px] font-mono text-[#52555a] bg-[#f5f5f2] border border-[#deddd6] px-2.5 py-0.5 rounded-md inline-flex items-center gap-1.5">
                                   📄 <strong className="font-semibold text-[#303236]">{p.fileAttachment.fileName}</strong>
                                   {p.fileAttachment.fileSize && (
@@ -316,13 +300,16 @@ export function OrdersPage({ playSound, navigate, notify, onDownloadAsset }: Ord
                         {/* Action Buttons Row */}
                         {order.status === 'completed' && <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-[#ebe9e1]">
                           {/* 1. Unduh Berkas Button with crisp white text & standard orange */}
-                          <button
+                          {p.fileAttachment?.fileData?.startsWith('data:') && <button
                             type="button"
                             onClick={() => onDownloadAsset(p)}
                             className="button button-orange inline-flex items-center gap-2 h-10 px-5 rounded-full !text-white !bg-[#e65416] hover:!bg-[#cf4a12] text-xs font-semibold shadow-sm transition active:scale-95"
                           >
                             <span>⬇️ Unduh Berkas Digital</span>
-                          </button>
+                          </button>}
+                          {!p.fileAttachment?.fileData?.startsWith('data:') && !isValidAccessUrl(p.accessUrl) && (
+                            <span className="text-xs text-[#72736c]">Berkas belum dilampirkan untuk produk ini.</span>
+                          )}
 
                           {/* 2. Link Cloud Template */}
                           {isValidAccessUrl(p.accessUrl) && (

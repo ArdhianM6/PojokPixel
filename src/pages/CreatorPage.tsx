@@ -427,7 +427,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
           img: projImg,
           galleryImages: projGalleryImages,
           tag: projTag.trim() || 'Aset Kreator',
-          shortDesc: projDesc.trim() || 'Project digital resmi buatan kreator terverifikasi PojokPixel.',
+          shortDesc: projDesc.trim() || 'Detail produk dari kreator PojokPixel.',
           formats: formatsArr.length > 0 ? formatsArr : ['File Digital'],
           deliveryType: deliveryMethodChoice,
           fileAttachment: attachedFile || undefined,
@@ -465,12 +465,12 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
           img: projImg,
           galleryImages: projGalleryImages,
           tag: projTag.trim() || 'Aset Kreator',
-          rating: 5.0,
-          reviewsCount: 1,
+          rating: 0,
+          reviewsCount: 0,
           salesCount: 0,
-          shortDesc: projDesc.trim() || 'Project digital resmi buatan kreator terverifikasi PojokPixel.',
+          shortDesc: projDesc.trim() || 'Detail produk dari kreator PojokPixel.',
           formats: formatsArr.length > 0 ? formatsArr : ['File Digital'],
-          includes: ['File Digital Asli', 'Lisensi Komersial Kreator', 'Update Gratis Selamanya'],
+          includes: ['Format dan detail mengikuti keterangan produk.'],
           deliveryType: deliveryMethodChoice,
           fileAttachment: attachedFile || undefined,
           accessUrl: projAccessUrl.trim() || undefined,
@@ -503,11 +503,11 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
         img: projImg,
         galleryImages: projGalleryImages,
         tag: projTag.trim() || 'Aset Kreator',
-        shortDesc: projDesc.trim() || 'Project digital resmi buatan kreator terverifikasi PojokPixel.',
+        shortDesc: projDesc.trim() || 'Detail produk dari kreator PojokPixel.',
         formats: formatsArr.length > 0 ? formatsArr : ['File Digital'],
         createdAt: new Date().toLocaleDateString('id-ID', { month: 'short', day: 'numeric', year: 'numeric' }),
         salesCount: 0,
-        rating: 5.0,
+        rating: 0,
         deliveryType: deliveryMethodChoice,
         fileAttachment: attachedFile || undefined,
         accessUrl: projAccessUrl.trim() || undefined,
@@ -542,12 +542,12 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
           img: newProject.img,
           galleryImages: newProject.galleryImages,
           tag: newProject.tag,
-          rating: 5.0,
-          reviewsCount: 1,
+          rating: 0,
+          reviewsCount: 0,
           salesCount: 0,
           shortDesc: newProject.shortDesc,
           formats: newProject.formats,
-          includes: ['File Digital Asli', 'Lisensi Komersial Kreator', 'Update Gratis Selamanya'],
+          includes: ['Format dan detail mengikuti keterangan produk.'],
           deliveryType: newProject.deliveryType,
           fileAttachment: newProject.fileAttachment,
           accessUrl: newProject.accessUrl,
@@ -968,10 +968,10 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
                 <small className="metric-sub">80% untuk kreator</small>
               </div>
               <div className="creator-metric-item">
-                <span className="creator-metric-icon"><CreatorIcon name="rating" /></span>
-                <span className="metric-label">Rating kreator</span>
-                <strong className="metric-val">5.0 ★</strong>
-                <small className="metric-sub">Standar kurasi resmi</small>
+                <span className="creator-metric-icon"><CreatorIcon name="catalog" /></span>
+                <span className="metric-label">Fokus kreator</span>
+                <strong className="metric-val">{creatorProfile.category || 'Belum diatur'}</strong>
+                <small className="metric-sub">Kategori spesialisasi utama</small>
               </div>
               <div className="creator-metric-item">
                 <span className="creator-metric-icon"><CreatorIcon name="live" /></span>
@@ -1374,7 +1374,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
                     <input
                       id="proj-tag"
                       type="text"
-                      placeholder="12 Template / Best Seller"
+                      placeholder="Contoh: 12 template / Paket bundel"
                       value={projTag}
                       onChange={(e) => setProjTag(e.target.value)}
                     />
@@ -1387,7 +1387,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
                   <input
                     id="proj-label"
                     type="text"
-                    placeholder="Baru / Terlaris / Diskon / Gratis"
+                    placeholder="Contoh: Paket bundel"
                     value={projLabel}
                     onChange={(e) => setProjLabel(e.target.value)}
                   />

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { getLiveProducts, rupiah, getProductImageUrl } from '../data/marketplace'
+import { getLiveProducts, rupiah, getProductImageUrl, isValidAccessUrl } from '../data/marketplace'
 import type { Product } from '../data/marketplace'
 import { authClient } from '../lib/auth-client'
 
@@ -247,9 +247,9 @@ export default function ProductDetailPage() {
             )}
             {videoPreview && <div className="detail-video-card"><div className="detail-video-heading"><span>Preview produk</span><span>Video kreator</span></div>{videoPreview.type === 'video' ? <video className="detail-video" src={videoPreview.src} controls playsInline preload="metadata" /> : <iframe className="detail-video" src={videoPreview.src} title={`Video preview ${product.name}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />}</div>}
             <div className="detail-trust-row">
-              <div className="detail-trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e65416" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg><span>Unduhan Instan</span></div>
-              <div className="detail-trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e65416" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg><span>Lisensi Produk</span></div>
-              <div className="detail-trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e65416" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5L20 7" /></svg><span>Akses Selamanya</span></div>
+              <div className="detail-trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e65416" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg><span>File dari kreator</span></div>
+              <div className="detail-trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e65416" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg><span>Format tercantum</span></div>
+              <div className="detail-trust-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e65416" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5L20 7" /></svg><span>Catatan kreator</span></div>
             </div>
           </div>
 
@@ -267,7 +267,7 @@ export default function ProductDetailPage() {
               </div>
               {discount > 0 && <span className="detail-discount-badge">Hemat {discount}%</span>}
             </div>
-            <div className="detail-section"><h3 className="detail-section-title">File yang diterima</h3><div className="detail-formats">{(product.formats.length ? product.formats : ['Detail format belum dicantumkan']).map((format) => <span key={format} className="detail-format-chip">{format}</span>)}</div>{product.fileAttachment && <div className="detail-file-row"><span className="detail-file-icon">↓</span><span><strong>{product.fileAttachment.fileName}</strong><small>{product.fileAttachment.fileSize} · {product.fileAttachment.fileType}</small></span></div>}{product.accessUrl && <p className="detail-access-note">Termasuk tautan akses cloud setelah checkout.</p>}</div>
+            <div className="detail-section"><h3 className="detail-section-title">File yang diterima</h3><div className="detail-formats">{(product.formats.length ? product.formats : ['Detail format belum dicantumkan']).map((format) => <span key={format} className="detail-format-chip">{format}</span>)}</div>{product.fileAttachment?.fileData?.startsWith('data:') && <div className="detail-file-row"><span className="detail-file-icon">↓</span><span><strong>{product.fileAttachment.fileName}</strong><small>{product.fileAttachment.fileSize} · {product.fileAttachment.fileType}</small></span></div>}{isValidAccessUrl(product.accessUrl) && <p className="detail-access-note">Tautan akses tersedia setelah checkout.</p>}</div>
             <div className="detail-section"><h3 className="detail-section-title">Yang kamu dapat</h3><ul className="detail-includes">{product.includes.map((item) => <li key={item}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e65416" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7" /></svg><span>{item}</span></li>)}</ul></div>
             {product.buyerNote && <div className="detail-note"><strong>Catatan kreator</strong><p>{product.buyerNote}</p></div>}
             <div className="detail-cta-row"><button type="button" className="detail-btn-primary" onClick={handleAddToCart} aria-live="polite">{added ? '✓ Ditambahkan ke keranjang' : '＋ Tambah ke Keranjang'}</button><a href="/" className="detail-btn-secondary">Lihat Produk Lain</a></div>

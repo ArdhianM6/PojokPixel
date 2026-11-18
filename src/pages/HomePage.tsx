@@ -1,8 +1,7 @@
-import { useRef, useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import type { CSSProperties } from 'react'
-import { featuredProducts, freeProducts, reviews, rupiah, getCreatorProducts, getProductImageUrl } from '../data/marketplace'
+import { featuredProducts, freeProducts, rupiah, getCreatorProducts, getProductImageUrl } from '../data/marketplace'
 import type { Product } from '../data/marketplace'
-import { TrustBadges } from '../components/TrustBadges'
 import { usePageMeta } from '../hooks/usePageMeta'
 
 interface HomePageProps {
@@ -24,7 +23,6 @@ export function HomePage({
 }: HomePageProps) {
   usePageMeta('Beranda', 'Marketplace produk digital Indonesia penyedia template website, poster digital, dan pembelajaran desain.')
 
-  const heroArtRef = useRef<HTMLDivElement>(null)
   const [catalogVersion, setCatalogVersion] = useState(0)
 
   // Listen to creator catalog changes
@@ -48,22 +46,10 @@ export function HomePage({
     return [...creatorProducts, ...featuredProducts]
   }, [creatorProducts])
 
-  // Top best-selling projects for the Hero Slider
-  const bestSellerSlides = useMemo(() => {
-    return [...allFeaturedProducts].sort((a, b) => b.salesCount - a.salesCount).slice(0, 4)
-  }, [allFeaturedProducts])
+  // Feature listings by catalog order; popularity metrics are not available yet.
+  const bestSellerSlides = useMemo(() => allFeaturedProducts.slice(0, 4), [allFeaturedProducts])
 
   const [currentSlide, setCurrentSlide] = useState(0)
-
-  // Continuous auto-slide every 3.8 seconds without user needing to click
-  useEffect(() => {
-    if (bestSellerSlides.length === 0) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % bestSellerSlides.length)
-    }, 3800)
-    return () => clearInterval(timer)
-  }, [bestSellerSlides.length])
 
   const handlePrevSlide = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -77,29 +63,13 @@ export function HomePage({
     setCurrentSlide((prev) => (prev + 1) % bestSellerSlides.length)
   }
 
-  // 3D Parallax Tilt for Hero Art
-  const handleHeroMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!heroArtRef.current) return
-    const rect = heroArtRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left - rect.width / 2
-    const y = e.clientY - rect.top - rect.height / 2
-    const rotateX = -(y / rect.height) * 10
-    const rotateY = (x / rect.width) * 10
-    heroArtRef.current.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`
-  }
-
-  const handleHeroMouseLeave = () => {
-    if (!heroArtRef.current) return
-    heroArtRef.current.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)'
-  }
-
-  const renderProductCard = (p: Product, index: number) => {
+  const renderProductCard = (p: Product) => {
     const isCustomArt = Boolean(
       p.id.startsWith('custom-') ||
       p.img.startsWith('data:') ||
       p.img.startsWith('http') ||
       p.label === 'Kreator' ||
-      !['folio', 'sundae', 'study', 'nara', 'flora', 'class'].includes(p.id)
+      !['folio', 'sundae', 'study', 'nara', 'flora', 'class', 'creator-pack'].includes(p.id)
     )
 
     return (
@@ -128,40 +98,20 @@ export function HomePage({
                 style={{ backgroundImage: `url(${getProductImageUrl(p.img)})` }}
               />
               <div className="custom-product-cover-tint" />
-              <div className="image-index">PP-0{index + 1}</div>
             </>
           ) : (
             <>
               <div className="product-image-shade" />
-              <div className="image-index">PP-0{index + 1}</div>
 
               <div className="mockup-content">
                 <span className="mockup-kicker">{p.category}</span>
-                <b>
-                  {p.id === 'folio' ? (
-                    <>YOUR WORK,<br />IN GOOD<br /><i>company.</i></>
-                  ) : p.id === 'sundae' ? (
-                    <>slow days<br /><i>feel good</i></>
-                  ) : p.id === 'study' ? (
-                    <>Make room<br />for <i>ideas.</i></>
-                  ) : p.id === 'nara' ? (
-                    <>Less noise.<br /><i>More you.</i></>
-                  ) : p.id === 'flora' ? (
-                    <>A little<br /><i>in bloom.</i></>
-                  ) : (
-                    <>Design it<br /><i>your way.</i></>
-                  )}
-                </b>
-                <span className="mockup-footer">
-                  POJOK PIXEL MARKETPLACE <span>+</span>
-                </span>
+                <b>{p.name}</b>
+                <span className="mockup-footer">{p.formats.slice(0, 2).join(' · ')}</span>
               </div>
             </>
           )}
 
-          <span className={`product-label ${p.label === 'Gratis' ? 'free' : ''}`}>
-            {p.label || 'Digital Product'}
-          </span>
+          {p.price === 0 && <span className="product-label free">Gratis</span>}
 
         <button
           type="button"
@@ -220,9 +170,6 @@ export function HomePage({
                       : 'Figma + HTML Siap Pakai'}
             </span>
           </span>
-          <span className="product-sales-count">
-            ★ {p.rating} ({p.reviewsCount}) • {p.salesCount}+ unduhan
-          </span>
         </div>
 
         <div className="product-purchase-row">
@@ -259,13 +206,13 @@ export function HomePage({
             <div className="hero-copy motion-safe:animate-panel-in">
               <div className="hero-kicker">
                 <span className="kicker-square" />
-                <span>MARKETPLACE DIGITAL PRODUCT INDONESIA</span>
+                <span>Produk digital dari kreator Indonesia</span>
               </div>
               <h1>
-                Karya digital pilihan<br />untuk <span>akselerasi ide.</span>
+                Temukan bahan untuk<br />karya berikutnya.
               </h1>
               <p>
-                Marketplace kurasi terlengkap penyedia <strong>Template Website</strong> siap pakai, <strong>Poster Digital</strong> estetik, dan <strong>Pembelajaran Digital</strong> praktis tanpa mulai dari kanvas kosong.
+                Jelajahi template website, poster, dan materi belajar yang dibuat kreator. Lihat format dan detail setiap produk sebelum memilih.
               </p>
 
               {/* Marketplace Hero Search */}
@@ -300,7 +247,7 @@ export function HomePage({
 
               {/* Quick Trending Tags */}
               <div className="hero-tags-row">
-                <span className="text-xs font-mono font-semibold">Paling Dicari:</span>
+                <span className="text-xs font-mono font-semibold">Jelajahi:</span>
                 <button
                   type="button"
                   className="hero-tag-pill"
@@ -353,22 +300,6 @@ export function HomePage({
                 </button>
               </div>
 
-              {/* Guarantees */}
-              <div className="marketplace-guarantees-strip">
-                <span className="guarantee-chip">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  Unduhan Instan
-                </span>
-                <span className="guarantee-chip">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  Lisensi Komersial Bebas
-                </span>
-                <span className="guarantee-chip">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m5 12 5 5L20 7"/></svg>
-                  100% Terkurasi
-                </span>
-              </div>
-
               {/* Team Proof with EXACT 3 MEMBERS */}
               <div className="hero-proof">
                 <div className="avatar-stack">
@@ -384,15 +315,9 @@ export function HomePage({
               </div>
             </div>
 
-            {/* 3D Parallax Hero Art */}
-            <div
-              className="hero-art-perspective motion-safe:animate-panel-in"
-              onMouseMove={handleHeroMouseMove}
-              onMouseLeave={handleHeroMouseLeave}
-            >
+            <div className="hero-art-perspective motion-safe:animate-panel-in">
               <div
                 className="hero-art"
-                ref={heroArtRef}
                 aria-label="Pratinjau marketplace produk digital Pojok Pixel"
               >
                 <div className="art-spark spark-one">*</div>
@@ -402,7 +327,7 @@ export function HomePage({
                   <div className="hero-slider-header">
                     <span className="hero-slider-badge">
                       <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
-                      Proyek Terlaris #{currentSlide + 1}
+                      Pilihan dari katalog
                     </span>
                     <div className="hero-slider-nav">
                       <button
@@ -449,19 +374,16 @@ export function HomePage({
                           aria-label={`Lihat detail ${item.name}`}
                         >
                           <div
-                            className="hero-slide-image"
-                            style={{
-                              backgroundImage: `url(${getProductImageUrl(item.img)})`,
-                            }}
+                            className={`hero-slide-image ${item.id.startsWith('custom-') || item.img.startsWith('data:') || item.img.startsWith('http') ? 'has-custom-cover' : `cover-${item.bg}`}`}
+                            style={item.id.startsWith('custom-') || item.img.startsWith('data:') || item.img.startsWith('http')
+                              ? { backgroundImage: `url(${getProductImageUrl(item.img)})` }
+                              : undefined}
                           >
                             <div className="hero-slide-top-tags">
                               <span className="hero-slide-cat">{item.category}</span>
-                              <span className="hero-slide-rating">★ {item.rating.toFixed(1)}</span>
                             </div>
                             <div className="hero-slide-sales">
-                              <span>📦 {item.salesCount}+ Pembeli</span>
-                              <span style={{ opacity: 0.6 }}>•</span>
-                              <span>{item.tag}</span>
+                              <span>{item.tag || item.category}</span>
                             </div>
                           </div>
 
@@ -521,36 +443,14 @@ export function HomePage({
         </div>
       </section>
 
-      {/* Stats Ribbon */}
-      <section className="stats-ribbon" aria-label="Statistik Marketplace Pojok Pixel">
-        <div className="app-container stats-grid">
-          <div className="stat-item">
-            <span className="stat-number">1.500+</span>
-            <span className="stat-label">File Digital Terunduh</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-number">3 Kategori</span>
-            <span className="stat-label">Website, Poster, Pembelajaran</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-number">100%</span>
-            <span className="stat-label">Hak Pakai Komersial & Personal</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-number">4.9 / 5.0</span>
-            <span className="stat-label">Rating Kepuasan Komunitas</span>
-          </div>
-        </div>
-      </section>
-
-      {/* 3-Pillar Category Showcase */}
+      {/* Browse by category */}
       <section className="category-showcase-section" id="kategori-unggulan">
         <div className="app-container">
           <div className="section-head text-center max-w-xl mx-auto mb-10">
-            <span className="eyebrow mx-auto justify-center"><span /> 3 PILAR PRODUK UTAMA</span>
-            <h2>Eksplorasi Menurut Kebutuhanmu</h2>
+            <span className="eyebrow mx-auto justify-center"><span /> Kategori</span>
+            <h2>Jelajahi berdasarkan jenis</h2>
             <p className="subhead">
-              Pilih pilar produk digital terkurasi untuk mempermudah alur kerjamu hari ini.
+              Pilih kategori untuk menemukan template, poster, atau materi belajar.
             </p>
           </div>
 
@@ -568,11 +468,10 @@ export function HomePage({
               }}
             >
               <div className="cat-card-header">
-                <span className="cat-number">01</span>
                 <span className="cat-badge">Website</span>
               </div>
               <h3>Template Website</h3>
-              <p>Koleksi template portofolio, landing page, dan UI kit responsif berbasis Figma Auto-Layout dan kode HTML/Tailwind siap deploy.</p>
+              <p>Template untuk portofolio, landing page, dan antarmuka web. Format tiap produk tercantum di detailnya.</p>
               <div className="cat-card-footer">
                 <span>Lihat Template Website</span>
                 <span className="cat-arrow">→</span>
@@ -592,11 +491,10 @@ export function HomePage({
               }}
             >
               <div className="cat-card-header">
-                <span className="cat-number">02</span>
                 <span className="cat-badge">Poster</span>
               </div>
               <h3>Template Poster</h3>
-              <p>Poster digital estetik editorial dan feed Instagram bernilai konversi tinggi. Mudah disunting di Canva gratis atau Photoshop.</p>
+              <p>Poster dan materi grafis untuk kebutuhan digital maupun cetak. Periksa format sebelum membeli.</p>
               <div className="cat-card-footer">
                 <span>Lihat Koleksi Poster</span>
                 <span className="cat-arrow">→</span>
@@ -616,11 +514,10 @@ export function HomePage({
               }}
             >
               <div className="cat-card-header">
-                <span className="cat-number">03</span>
                 <span className="cat-badge">Belajar</span>
               </div>
               <h3>Pembelajaran Digital</h3>
-              <p>Modul video praktis, cheatsheet grid, dan workbook interaktif untuk menguasai desain digital modern dari nol tanpa teori membingungkan.</p>
+              <p>Materi belajar desain dalam format yang dijelaskan pada setiap produk.</p>
               <div className="cat-card-footer">
                 <span>Mulai Belajar Desain</span>
                 <span className="cat-arrow">→</span>
@@ -638,11 +535,11 @@ export function HomePage({
           <div className="collection-header-row" style={{ marginBottom: '24px' }}>
             <div>
               <span className="eyebrow">
-                <span /> {creatorProducts.length > 0 ? 'PILIHAN TERBAIK & RILISAN KREATOR' : 'PILIHAN TERBAIK'}
+                <span /> Katalog
               </span>
-              <h2 className="collection-title">Produk Unggulan & Terpopuler</h2>
+              <h2 className="collection-title">Produk pilihan</h2>
               <p className="collection-subtitle">
-                Aset digital pilihan bernilai konversi tinggi untuk proyek agensi, UMKM, dan kreator profesional.
+                Buka detail produk untuk melihat format, isi, dan catatan kreator.
               </p>
             </div>
             <button
@@ -659,7 +556,7 @@ export function HomePage({
           </div>
 
           <div className="product-grid">
-            {allFeaturedProducts.map((p, i) => renderProductCard(p, i))}
+            {allFeaturedProducts.map((p) => renderProductCard(p))}
           </div>
 
           <div className="text-center mt-8">
@@ -685,10 +582,10 @@ export function HomePage({
         <div className="app-container">
           <div className="collection-header-row" style={{ marginBottom: '24px' }}>
             <div>
-              <span className="eyebrow"><span /> 100% BEBAS BIAYA</span>
+              <span className="eyebrow"><span /> Produk gratis</span>
               <h2 className="collection-title">Unduh Gratis (Rp 0)</h2>
               <p className="collection-subtitle">
-                Mulai eksplorasi kualitas Pojok Pixel tanpa syarat. Termasuk lisensi komersial dan file mentah siap pakai.
+                Lihat format, isi, dan catatan kreator pada halaman setiap produk.
               </p>
             </div>
             <button
@@ -705,41 +602,7 @@ export function HomePage({
           </div>
 
           <div className="product-grid">
-            {freeProducts.map((p, i) => renderProductCard(p, i))}
-          </div>
-        </div>
-      </section>
-
-      {/* Trust Badges */}
-      <TrustBadges />
-
-      {/* Customer Reviews Section */}
-      <section className="reviews-section" aria-label="Testimoni Pengguna Marketplace">
-        <div className="app-container">
-          <div className="section-head text-center max-w-xl mx-auto mb-10">
-            <span className="eyebrow mx-auto justify-center"><span /> KATA KOMUNITAS</span>
-            <h2>Cerita dari Kreator Nyata</h2>
-            <p className="subhead">
-              Bagaimana produk digital Pojok Pixel membantu mempercepat alur kerja dan proyek klien mereka.
-            </p>
-          </div>
-
-          <div className="reviews-grid">
-            {reviews.map((rev) => (
-              <div className="review-card" key={rev.name}>
-                <div className="review-stars">
-                  {'★'.repeat(rev.rating)}
-                </div>
-                <p className="review-text">"{rev.text}"</p>
-                <div className="review-author">
-                  <span className="author-avatar">{rev.avatar}</span>
-                  <div>
-                    <h4 className="author-name">{rev.name}</h4>
-                    <span className="author-role">{rev.role}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {freeProducts.map((p) => renderProductCard(p))}
           </div>
         </div>
       </section>

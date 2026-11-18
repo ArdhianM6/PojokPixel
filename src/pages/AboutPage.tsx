@@ -24,13 +24,13 @@ export function AboutPage({ playSound, navigate }: AboutPageProps) {
           <div>
             <span className="inline-flex items-center gap-2 font-mono text-[11px] tracking-widest text-[#6d6e68] mb-3">
               <span className="w-2 h-2 bg-[#e65416] rounded-sm" />
-              TENTANG PLATFORM &amp; KURATOR
+              Tentang PojokPixel
             </span>
             <h1 className="font-[family-name:var(--font-display)] text-3xl md:text-4xl font-bold text-[#303236] tracking-tight mb-2">
               Mengenal Pojok Pixel &amp; Tim
             </h1>
             <p className="text-sm text-[#555650] leading-relaxed max-w-xl">
-              Platform marketplace penyedia produk digital terkurasi untuk mempercepat ide desainer, kreator, dan pelaku usaha Indonesia.
+              Tempat mencari template website, poster, dan materi belajar dari kreator.
             </p>
           </div>
         </div>
@@ -43,43 +43,39 @@ export function AboutPage({ playSound, navigate }: AboutPageProps) {
             <div>
               <span className="inline-flex items-center gap-2 font-mono text-[11px] tracking-widest text-[#6d6e68] mb-3">
                 <span className="w-2 h-2 bg-[#e65416] rounded-sm" />
-                MANIFESTO KREATIF
+                Cara kami bekerja
               </span>
               <h2 className="font-[family-name:var(--font-display)] text-3xl sm:text-4xl font-bold text-[#303236] tracking-tight leading-tight">
-                Karya digital berkualitas,<br />
-                akses instan <span className="text-[#e65416]">selamanya.</span>
+                Mulai dari karya<br />yang sudah ada.
               </h2>
             </div>
             <div className="flex flex-col gap-4 text-sm text-[#555650] leading-relaxed">
               <p>
-                Kami percaya memulai sebuah karya digital tidak harus selalu dari kanvas kosong yang melelahkan. Pojok Pixel hadir sebagai jembatan yang menghubungkan kurasi estetika dengan kepraktisan produksi digital.
+                PojokPixel mengumpulkan aset digital untuk membantu pekerjaan desain dan web. Katalog ini memuat template website, poster, dan materi belajar.
               </p>
               <p>
-                Setiap <strong className="text-[#303236]">Template Website</strong>, <strong className="text-[#303236]">Poster Digital</strong>, dan modul <strong className="text-[#303236]">Pembelajaran Digital</strong> di Pojok Pixel dirancang dengan standar hierarki visual ketat, auto-layout rapi, dan lisensi komersial bebas agar langsung dapat menghasilkan nilai nyata bagi penggunanya.
+                Sebelum memilih, pembeli dapat membuka detail produk untuk melihat format, daftar isi, dan catatan kreator. Ketentuan penggunaan dapat berbeda untuk setiap produk.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Craft Pillars */}
-      <section className="py-14 bg-[#f5f5f2] border-b border-[#deddd6]" aria-label="Jaminan Kualitas Marketplace">
+      {/* How to use the catalog */}
+      <section className="py-14 bg-[#f5f5f2] border-b border-[#deddd6]" aria-label="Cara menggunakan katalog">
         <div className="w-full max-w-[1220px] mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white border border-[#deddd6] rounded-2xl p-6 shadow-sm">
-              <div className="font-mono text-2xl font-bold text-[#e65416] mb-3">01</div>
-              <h4 className="font-[family-name:var(--font-display)] font-bold text-[#303236] text-lg mb-2">Rapi Standar Industri</h4>
-              <p className="text-xs text-[#555650] leading-relaxed">Auto-Layout terstruktur di Figma, kode HTML/Tailwind bersih dan ringan, serta layer Canva/PSD terkelola profesional.</p>
+              <h4 className="font-[family-name:var(--font-display)] font-bold text-[#303236] text-lg mb-2">Pilih kategori</h4>
+              <p className="text-xs text-[#555650] leading-relaxed">Telusuri template website, poster, atau pembelajaran digital dari katalog.</p>
             </div>
             <div className="bg-white border border-[#deddd6] rounded-2xl p-6 shadow-sm">
-              <div className="font-mono text-2xl font-bold text-[#e65416] mb-3">02</div>
-              <h4 className="font-[family-name:var(--font-display)] font-bold text-[#303236] text-lg mb-2">100% Responsif &amp; Siap Cetak</h4>
-              <p className="text-xs text-[#555650] leading-relaxed">Semua aset website diuji lintas perangkat layar, dan seluruh poster dirancang dalam standar resolusi tinggi 300 DPI.</p>
+              <h4 className="font-[family-name:var(--font-display)] font-bold text-[#303236] text-lg mb-2">Periksa format</h4>
+              <p className="text-xs text-[#555650] leading-relaxed">Halaman produk mencantumkan format file atau aplikasi yang diperlukan.</p>
             </div>
             <div className="bg-white border border-[#deddd6] rounded-2xl p-6 shadow-sm">
-              <div className="font-mono text-2xl font-bold text-[#e65416] mb-3">03</div>
-              <h4 className="font-[family-name:var(--font-display)] font-bold text-[#303236] text-lg mb-2">Kurasi Human-First</h4>
-              <p className="text-xs text-[#555650] leading-relaxed">Bukan hasil generator acak. Setiap karya ditinjau langsung oleh tim kurator internal kami untuk menjamin estetika otentik.</p>
+              <h4 className="font-[family-name:var(--font-display)] font-bold text-[#303236] text-lg mb-2">Baca catatan kreator</h4>
+              <p className="text-xs text-[#555650] leading-relaxed">Pastikan isi produk dan ketentuan penggunaannya sesuai kebutuhanmu.</p>
             </div>
           </div>
         </div>
@@ -91,13 +87,13 @@ export function AboutPage({ playSound, navigate }: AboutPageProps) {
           <div className="text-center max-w-xl mx-auto mb-12">
             <span className="inline-flex items-center gap-2 font-mono text-[11px] tracking-widest text-[#6d6e68] mb-2">
               <span className="w-2 h-2 bg-[#e65416] rounded-sm" />
-              TIM POJOK PIXEL
+              Tim PojokPixel
             </span>
             <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold text-[#303236] tracking-tight mb-2">
               Tim Pengembang &amp; Kurator
             </h2>
             <p className="text-sm text-[#555650] leading-relaxed">
-              Tiga orang dengan dedikasi tinggi menggabungkan keahlian desain antarmuka, rekayasa frontend, dan kurasi konten kreatif.
+              Orang-orang di balik pengembangan dan pengelolaan PojokPixel.
             </p>
           </div>
 

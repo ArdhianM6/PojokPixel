@@ -31,7 +31,7 @@ export function CatalogPage({
   const [category, setCategory] = useState(initialCategory)
   const [query, setQuery] = useState(initialQuery)
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery)
-  const [sortBy, setSortBy] = useState<'featured' | 'sales' | 'rating' | 'price-asc' | 'price-desc'>('featured')
+  const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc'>('featured')
   const [currentPage, setCurrentPage] = useState(1)
   const [catalogVersion, setCatalogVersion] = useState(0)
   const ITEMS_PER_PAGE = 6
@@ -82,9 +82,7 @@ export function CatalogPage({
       return matchCat && matchQuery
     })
 
-    if (sortBy === 'sales') result = [...result].sort((a, b) => b.salesCount - a.salesCount)
-    else if (sortBy === 'rating') result = [...result].sort((a, b) => b.rating - a.rating)
-    else if (sortBy === 'price-asc') result = [...result].sort((a, b) => a.price - b.price)
+    if (sortBy === 'price-asc') result = [...result].sort((a, b) => a.price - b.price)
     else if (sortBy === 'price-desc') result = [...result].sort((a, b) => b.price - a.price)
     return result
   }, [category, debouncedQuery, sortBy, favorites])
@@ -117,7 +115,7 @@ export function CatalogPage({
               Koleksi Aset &amp; Template Digital
             </h1>
             <p className="text-sm text-[#555650] leading-relaxed max-w-xl">
-              Pilihan template website siap rakit, poster grafis resolusi tinggi, dan modul pembelajaran praktis terkurasi.
+              Telusuri produk berdasarkan kategori, format, atau harga. Buka detail produk untuk melihat informasi dari kreator.
             </p>
           </div>
         </div>
@@ -194,9 +192,7 @@ export function CatalogPage({
                   onChange={(e) => { playSound('click'); setSortBy(e.target.value as typeof sortBy) }}
                   className="appearance-none h-9 pl-3 pr-8 rounded-full text-xs font-semibold border border-[#deddd6] bg-white text-[#303236] focus:outline-none focus:border-[#e65416] transition cursor-pointer"
                 >
-                  <option value="featured">✨ Pilihan Terkurasi</option>
-                  <option value="sales">🔥 Paling Laris</option>
-                  <option value="rating">★ Rating Tertinggi</option>
+                  <option value="featured">Urutan katalog</option>
                   <option value="price-asc">Harga Terendah</option>
                   <option value="price-desc">Harga Tertinggi</option>
                 </select>
@@ -211,13 +207,13 @@ export function CatalogPage({
 
           {/* Product Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-            {paginatedProducts.map((p, i) => {
+            {paginatedProducts.map((p) => {
               const isCustomArt = Boolean(
                 p.id.startsWith('custom-') ||
                 p.img.startsWith('data:') ||
                 p.img.startsWith('http') ||
                 p.label === 'Kreator' ||
-                !['folio', 'sundae', 'study', 'nara', 'flora', 'class'].includes(p.id)
+                !['folio', 'sundae', 'study', 'nara', 'flora', 'class', 'creator-pack'].includes(p.id)
               )
 
               return (
@@ -244,39 +240,19 @@ export function CatalogPage({
                           style={{ backgroundImage: `url(${getProductImageUrl(p.img)})` }}
                         />
                         <div className="custom-product-cover-tint" />
-                        <div className="image-index">PP-0{i + 1}</div>
                       </>
                     ) : (
                       <>
                         <div className="product-image-shade" />
-                        <div className="image-index">PP-0{i + 1}</div>
                         <div className="mockup-content">
                           <span className="mockup-kicker">{p.category}</span>
-                          <b>
-                            {p.id === 'folio' ? (
-                              <>YOUR WORK,<br />IN GOOD<br /><i>company.</i></>
-                            ) : p.id === 'sundae' ? (
-                              <>slow days<br /><i>feel good</i></>
-                            ) : p.id === 'study' ? (
-                              <>Make room<br />for <i>ideas.</i></>
-                            ) : p.id === 'nara' ? (
-                              <>Less noise.<br /><i>More you.</i></>
-                            ) : p.id === 'flora' ? (
-                              <>A little<br /><i>in bloom.</i></>
-                            ) : (
-                              <>Design it<br /><i>your way.</i></>
-                            )}
-                          </b>
-                          <span className="mockup-footer">
-                            POJOK PIXEL MARKETPLACE <span>+</span>
-                          </span>
+                          <b>{p.name}</b>
+                          <span className="mockup-footer">{p.formats.slice(0, 2).join(' · ')}</span>
                         </div>
                       </>
                     )}
 
-                    <span className={`product-label ${p.label === 'Gratis' ? 'free' : ''}`}>
-                      {p.label || 'Digital Product'}
-                    </span>
+                    {p.price === 0 && <span className="product-label free">Gratis</span>}
 
                     <button
                       type="button"
@@ -324,9 +300,6 @@ export function CatalogPage({
                                 ? 'Canva / Siap Cetak'
                                 : 'Figma + HTML Siap Pakai'}
                         </span>
-                      </span>
-                      <span className="product-sales-count">
-                        ★ {p.rating} ({p.reviewsCount}) • {p.salesCount}+ unduhan
                       </span>
                     </div>
 

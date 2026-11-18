@@ -627,33 +627,22 @@ function Storefront() {
     playSound('pop')
     const fileData = p.fileAttachment?.fileData
     const hasOriginalFile = Boolean(fileData?.startsWith('data:'))
+    if (!hasOriginalFile) {
+      notify(isValidAccessUrl(p.accessUrl)
+        ? 'Berkas belum dilampirkan. Gunakan tautan akses produk di bawah.'
+        : 'Berkas asli belum tersedia. Hubungi kreator melalui catatan produk.')
+      return
+    }
     const safeProductName = p.name.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Produk_Digital'
-    const fileName = hasOriginalFile && p.fileAttachment?.fileName
+    const fileName = p.fileAttachment?.fileName
       ? p.fileAttachment.fileName
       : `${safeProductName}_Petunjuk_Akses.txt`
 
-    notify(hasOriginalFile
-      ? `Memulai unduhan berkas untuk "${p.name}"...`
-      : `Berkas asli "${p.name}" belum tersedia. Mengunduh petunjuk akses (.txt).`)
+    notify(`Memulai unduhan berkas untuk "${p.name}"...`)
 
     const link = document.createElement('a')
     link.download = fileName
-    if (hasOriginalFile && fileData) {
-      link.href = fileData
-    } else {
-      const content = `PETUNJUK AKSES PRODUK DIGITAL POJOKPIXEL\n\n` +
-        `Produk: ${p.name}\n` +
-        `Kategori: ${p.category}\n` +
-        `Tanggal Unduh: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}\n\n` +
-        `Berkas asli produk ini belum tersedia untuk diunduh. File ini bukan arsip ZIP.\n` +
-        (isValidAccessUrl(p.accessUrl) ? `Link akses produk: ${p.accessUrl.trim()}\n` : 'Belum ada tautan akses yang tersedia. Hubungi kreator atau tim PojokPixel untuk mendapatkan berkas produk.\n') +
-        (p.buyerNote ? `Instruksi / Catatan Kreator: ${p.buyerNote}\n` : '') +
-        `\nTerima kasih telah mendukung kreator di PojokPixel.\n`
-      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
-      const objectUrl = URL.createObjectURL(blob)
-      link.href = objectUrl
-      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000)
-    }
+    link.href = fileData!
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -716,8 +705,7 @@ function Storefront() {
             <Icon name="spark" size={14} className="text-[#e65416]" />
             <span>Marketplace aset digital untuk ide kreatif</span>
             <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[rgba(230,84,22,0.22)] px-2 py-0.5 text-[10px] text-[#fca882]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#e65416] animate-pulse" />
-              1.500+ File Terunduh
+              Template · Poster · Materi belajar
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-2.5 whitespace-nowrap">
@@ -731,7 +719,7 @@ function Storefront() {
               <Icon name={soundEnabled ? 'volume' : 'volume-mute'} size={12} />
               <span>Suara: {soundEnabled ? 'ON' : 'OFF'}</span>
             </button>
-            <span className="hidden xl:inline">Karya lokal, akses instan selamanya</span>
+            <span className="hidden xl:inline">Karya digital dari kreator Indonesia</span>
           </div>
         </div>
       </div>
@@ -1371,26 +1359,26 @@ function Storefront() {
           </div>
 
           <div className="footer-col">
-            <h4>Lisensi &amp; Jaminan</h4>
+            <h4>Sebelum membeli</h4>
             <ul>
               <li>
                 <span className="guarantee-text">
-                  <Icon name="zap" size={14} /> <span>Unduhan Instan Selamanya</span>
+                  <Icon name="zap" size={14} /> <span>Format tercantum di halaman produk</span>
                 </span>
               </li>
               <li>
                 <span className="guarantee-text">
-                  <Icon name="shield" size={14} /> <span>100% Lisensi Komersial</span>
+                  <Icon name="shield" size={14} /> <span>Baca catatan penggunaan produk</span>
                 </span>
               </li>
               <li>
                 <span className="guarantee-text">
-                  <Icon name="refresh" size={14} /> <span>Update File Bebas Biaya</span>
+                  <Icon name="refresh" size={14} /> <span>Periksa detail sebelum membeli</span>
                 </span>
               </li>
               <li>
                 <span className="guarantee-text">
-                  <Icon name="check" size={14} /> <span>Transaksi Aman Terverifikasi</span>
+                  <Icon name="check" size={14} /> <span>Butuh bantuan? Hubungi tim kami</span>
                 </span>
               </li>
             </ul>
@@ -1463,15 +1451,6 @@ function Storefront() {
                   <span className="tab-badge">{quickViewProduct.tag}</span>
                 </div>
                 <h3 className="quickview-title">{quickViewProduct.name}</h3>
-
-                <div className="quickview-rating">
-                  <div className="flex text-amber-500">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Icon name="star" size={13} key={i} />
-                    ))}
-                  </div>
-                  <span>{quickViewProduct.rating} / 5.0 ({quickViewProduct.reviewsCount} ulasan • {quickViewProduct.salesCount}+ unduhan)</span>
-                </div>
 
                 <p className="quickview-desc">{quickViewProduct.shortDesc}</p>
 
@@ -1824,7 +1803,7 @@ function Storefront() {
                   No. Pesanan: #{activeOrderId || 'PP'} • Status: {paymentMethod === 'qris' ? 'Simulasi Selesai' : 'Lunas'}
                 </span>
                 <p className="checkout-success-desc">
-                  Terima kasih sudah berbelanja di PojokPixel! Seluruh berkas digital pesananmu telah disiapkan di bawah ini dan dapat langsung kamu unduh sekarang juga:
+                  Status pesananmu tercatat. Kartu di bawah menampilkan file atau tautan akses yang disediakan untuk setiap produk.
                 </p>
 
                 {/* Daftar Berkas Digital yang Dibeli */}
@@ -1840,23 +1819,25 @@ function Storefront() {
                           <div className="delivery-card-info">
                             <span className="delivery-card-cat">{p.category}</span>
                             <h4 className="delivery-card-name">{p.name}</h4>
-                            <span className="delivery-card-license">🛡️ Lisensi Komersial & Personal Resmi</span>
                           </div>
                         </div>
 
                         <div className="delivery-card-actions">
                           {/* 1. Tombol Unduh Berkas Asli */}
-                          <button
+                          {p.fileAttachment?.fileData?.startsWith('data:') && <button
                             type="button"
                             className="button button-orange delivery-download-btn"
                             onClick={() => handleDownloadAsset(p)}
                           >
                             <Icon name="download" size={15} />
                             <span>
-                              Unduh Berkas {p.fileAttachment?.fileName ? `: ${p.fileAttachment.fileName}` : 'Digital'}
+                              Unduh berkas {p.fileAttachment.fileName ? `: ${p.fileAttachment.fileName}` : 'digital'}
                               {p.fileAttachment?.fileSize ? ` (${p.fileAttachment.fileSize})` : ''}
                             </span>
-                          </button>
+                          </button>}
+                          {!p.fileAttachment?.fileData?.startsWith('data:') && !isValidAccessUrl(p.accessUrl) && (
+                            <p className="delivery-card-note">Berkas belum tersedia. Hubungi kreator untuk meminta file produk ini.</p>
+                          )}
 
                           {/* 2. Tombol Link Cloud Akses jika kreator melampirkan link */}
                           {isValidAccessUrl(p.accessUrl) && (

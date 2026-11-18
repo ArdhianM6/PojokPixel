@@ -991,6 +991,14 @@ button {
   overflow: hidden;
 }
 
+.hero-slide-image.cover-folio { background-color: #d7d9d4; }
+.hero-slide-image.cover-sundae { background-color: #e4c1a3; }
+.hero-slide-image.cover-study { background-color: #d9c9a8; }
+.hero-slide-image.cover-nara { background-color: #b9c1bd; }
+.hero-slide-image.cover-flora { background-color: #d4bba9; }
+.hero-slide-image.cover-class { background-color: #aebbc5; }
+.hero-slide-image.cover-nara:not([style]) { background-color: #b9c1bd; }
+
 .hero-slide-image::before {
   content: '';
   position: absolute;
@@ -1919,11 +1927,9 @@ button {
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--photo) center/cover;
-  mix-blend-mode: soft-light;
-  opacity: .45;
+  background: radial-gradient(ellipse at 78% 16%, rgba(255,255,255,.7), transparent 45%), linear-gradient(145deg, color-mix(in srgb, var(--accent) 20%, transparent), transparent 72%);
   z-index: -1;
-  transition: transform .45s cubic-bezier(.16, 1, .3, 1);
+  transition: opacity .25s ease;
 }
 
 /* Custom & Creator Products: Show crystal clear, uncropped real cover photo */
@@ -1975,7 +1981,7 @@ button {
 }
 
 .product-card:hover .product-image:before {
-  transform: scale(1.06);
+  opacity: .75;
 }
 
 .product-image:after {
@@ -2055,7 +2061,7 @@ button {
 }
 
 .mockup-content b {
-  font: 700 clamp(16px, 2.2vw, 24px)/1.2 var(--display);
+  font: 700 clamp(14px, 1.8vw, 20px)/1.15 var(--display);
   letter-spacing: -0.01em;
 }
 

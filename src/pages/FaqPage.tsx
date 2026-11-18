@@ -8,7 +8,7 @@ interface FaqPageProps {
 }
 
 export function FaqPage({ playSound, navigate }: FaqPageProps) {
-  usePageMeta('Tanya Jawab & Bantuan — FAQ', 'Temukan jawaban lengkap seputar cara pembelian, lisensi komersial, format file, dan pembaruan gratis di Pojok Pixel.')
+  usePageMeta('Tanya Jawab & Bantuan — FAQ', 'Temukan jawaban seputar detail produk, lisensi, format file, dan cara mendapat bantuan di PojokPixel.')
 
   const [openFaq, setOpenFaq] = useState<number | null>(0)
 
