@@ -11,6 +11,7 @@ interface CreatorProfile {
   email: string
   phone: string
   category: string
+  specializations?: string[]
   portfolioUrl: string
   bio: string
   registeredAt: string
@@ -121,7 +122,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
   const [regUsername, setRegUsername] = useState('')
   const [regEmail, setRegEmail] = useState('')
   const [regPhone, setRegPhone] = useState('')
-  const [regCategory, setRegCategory] = useState<'Template Website' | 'Template Poster' | 'Pembelajaran Digital'>('Template Website')
+  const [regCategories, setRegCategories] = useState<string[]>(['Template Website'])
   const [regPortfolio, setRegPortfolio] = useState('')
   const [regBio, setRegBio] = useState('')
   const [regAgreed, setRegAgreed] = useState(false)
@@ -210,6 +211,10 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
   // Handle Creator Registration Submit
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (regCategories.length === 0) {
+      notify('Pilih setidaknya satu kategori spesialisasi.')
+      return
+    }
     if (!regAgreed) {
       alert('Harap setujui syarat & ketentuan kreator terlebih dahulu.')
       return
@@ -226,7 +231,8 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
         username: regUsername.trim().replace(/^@/, ''),
         email: regEmail.trim(),
         phone: regPhone.trim(),
-        category: regCategory,
+        category: regCategories[0],
+        specializations: regCategories,
         portfolioUrl: regPortfolio.trim(),
         bio: regBio.trim(),
         registeredAt: new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }),
@@ -798,10 +804,9 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
 
                   {/* Kategori Spesialisasi */}
                   <div className="creator-form-field full-col">
-                    <label>
-                      Kategori Spesialisasi Utama <span>*</span>
-                    </label>
-                    <div className="creator-category-radios">
+                    <label>Kategori Spesialisasi <span>*</span></label>
+                    <small className="creator-specialization-hint">Pilih satu atau beberapa fokus yang sesuai dengan karyamu.</small>
+                    <div className="creator-category-radios" role="group" aria-label="Kategori spesialisasi">
                       {[
                         { id: 'Template Website', desc: 'Landing page, dashboard, komponen HTML/Tailwind/Figma' },
                         { id: 'Template Poster', desc: 'Poster seni, feed/story Instagram, banner cetak' },
@@ -809,13 +814,18 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
                       ].map((cat) => (
                         <label
                           key={cat.id}
-                          className={`creator-cat-pill ${regCategory === cat.id ? 'is-active' : ''}`}
+                          className={`creator-cat-pill ${regCategories.includes(cat.id) ? 'is-active' : ''}`}
                         >
                           <input
-                            type="radio"
-                            name="creator-cat"
-                            checked={regCategory === cat.id}
-                            onChange={() => setRegCategory(cat.id as any)}
+                            type="checkbox"
+                            name="creator-categories"
+                            value={cat.id}
+                            checked={regCategories.includes(cat.id)}
+                            onChange={(event) => setRegCategories((current) => (
+                              event.target.checked
+                                ? [...current, cat.id]
+                                : current.filter((category) => category !== cat.id)
+                            ))}
                           />
                           <div>
                             <strong>{cat.id}</strong>
@@ -913,7 +923,7 @@ export function CreatorPage({ playSound, navigate, notify }: CreatorPageProps) {
                   </div>
                   <h1 className="creator-studio-name">{creatorProfile.name}</h1>
                   <span className="creator-handle">
-                    @{creatorProfile.username} • Spesialisasi {creatorProfile.category}
+                    @{creatorProfile.username} • Spesialisasi {(creatorProfile.specializations?.length ? creatorProfile.specializations : [creatorProfile.category]).join(', ')}
                   </span>
                   <p className="creator-bio-text">{creatorProfile.bio || 'Kreator resmi produk digital PojokPixel.'}</p>
                 </div>

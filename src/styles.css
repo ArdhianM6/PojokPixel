@@ -5851,11 +5851,14 @@ button {
 
 .creator-category-radios {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .creator-cat-pill {
+  box-sizing: border-box;
+  width: 100%;
   border: 1.5px solid #e4e2dd;
   border-radius: var(--radius-md);
   padding: 12px 14px;
@@ -5883,6 +5886,13 @@ button {
   height: 16px;
   accent-color: var(--orange);
   margin-top: 2px;
+}
+
+.creator-specialization-hint {
+  display: block;
+  margin-top: 3px;
+  color: #72736c;
+  font-size: 11px;
 }
 
 .creator-cat-pill strong {
