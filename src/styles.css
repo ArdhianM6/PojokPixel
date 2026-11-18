@@ -4201,8 +4201,13 @@ button {
 
 .profile-chevron {
   color: var(--orange);
-  font-size: 15px;
-  line-height: 1;
+  display: block;
+  flex: 0 0 auto;
+  transition: transform .18s ease;
+}
+
+.header-profile[aria-expanded="true"] .profile-chevron {
+  transform: rotate(180deg);
 }
 
 .profile-dropdown {

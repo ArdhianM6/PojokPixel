@@ -625,29 +625,34 @@ function Storefront() {
   // Handle genuine file download for purchased products
   const handleDownloadAsset = (p: Product) => {
     playSound('pop')
-    notify(`Memulai unduhan berkas untuk "${p.name}"...`)
-
-    const fileName = p.fileAttachment?.fileName || `${p.name.replace(/[^a-zA-Z0-9_-]/g, '_')}_PojokPixel.zip`
     const fileData = p.fileAttachment?.fileData
+    const hasOriginalFile = Boolean(fileData?.startsWith('data:'))
+    const safeProductName = p.name.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Produk_Digital'
+    const fileName = hasOriginalFile && p.fileAttachment?.fileName
+      ? p.fileAttachment.fileName
+      : `${safeProductName}_Petunjuk_Akses.txt`
+
+    notify(hasOriginalFile
+      ? `Memulai unduhan berkas untuk "${p.name}"...`
+      : `Berkas asli "${p.name}" belum tersedia. Mengunduh petunjuk akses (.txt).`)
 
     const link = document.createElement('a')
     link.download = fileName
-    if (fileData && fileData.startsWith('data:')) {
+    if (hasOriginalFile && fileData) {
       link.href = fileData
     } else {
-      const content = `====================================================\n` +
-        `POJOKPIXEL RESMI — PAKET BERKAS DIGITAL\n` +
-        `====================================================\n\n` +
+      const content = `PETUNJUK AKSES PRODUK DIGITAL POJOKPIXEL\n\n` +
         `Produk: ${p.name}\n` +
         `Kategori: ${p.category}\n` +
-        `Tanggal Transaksi: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}\n` +
-        `Lisensi: Lisensi Komersial & Personal Penuh (PojokPixel)\n` +
-        (p.accessUrl ? `Link Akses Cloud Template: ${p.accessUrl}\n` : '') +
+        `Tanggal Unduh: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}\n\n` +
+        `Berkas asli produk ini belum tersedia untuk diunduh. File ini bukan arsip ZIP.\n` +
+        (isValidAccessUrl(p.accessUrl) ? `Link akses produk: ${p.accessUrl.trim()}\n` : 'Belum ada tautan akses yang tersedia. Hubungi kreator atau tim PojokPixel untuk mendapatkan berkas produk.\n') +
         (p.buyerNote ? `Instruksi / Catatan Kreator: ${p.buyerNote}\n` : '') +
-        `\n----------------------------------------------------\n` +
-        `Terima kasih telah mendukung kreator Indonesia di PojokPixel!\n`
+        `\nTerima kasih telah mendukung kreator di PojokPixel.\n`
       const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
-      link.href = URL.createObjectURL(blob)
+      const objectUrl = URL.createObjectURL(blob)
+      link.href = objectUrl
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000)
     }
     document.body.appendChild(link)
     link.click()
@@ -922,7 +927,9 @@ function Storefront() {
                       )}
                     </span>
                     <span className="header-profile-name">{session.user.name || 'Akun saya'}</span>
-                    <span className="profile-chevron" aria-hidden="true">⌄</span>
+                    <svg className="profile-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
                   </button>
                   {profileMenuOpen && (
                     <div className="profile-dropdown" role="menu">
