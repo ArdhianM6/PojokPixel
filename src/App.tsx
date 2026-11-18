@@ -883,19 +883,6 @@ function Storefront() {
               </button>
             </div>
 
-            <button
-              type="button"
-              className={`icon-button favorite-nav-button ${currentPath.startsWith('/favorit') ? 'is-active' : ''}`}
-              aria-label={`Produk favorit${favorites.length ? `, ${favorites.length} produk` : ''}`}
-              onClick={() => {
-                playSound('click')
-                navigate('/favorit')
-              }}
-            >
-              <Icon name="heart" size={18} />
-              {favorites.length > 0 && <span className="favorite-nav-count">{favorites.length}</span>}
-            </button>
-
             {!isPending &&
               (session?.user ? (
                 <div className="profile-menu-wrap" ref={profileMenu}>

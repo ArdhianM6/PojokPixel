@@ -470,32 +470,6 @@ button {
   color: var(--orange);
 }
 
-.favorite-nav-button {
-  position: relative;
-  flex: none;
-}
-
-.favorite-nav-button.is-active,
-.favorite-nav-button:hover {
-  color: var(--orange);
-}
-
-.favorite-nav-count {
-  position: absolute;
-  top: 0;
-  right: 0;
-  display: grid;
-  min-width: 16px;
-  height: 16px;
-  place-items: center;
-  padding: 0 4px;
-  border: 2px solid var(--paper);
-  border-radius: 999px;
-  color: #fff;
-  background: var(--orange);
-  font: 700 9px var(--mono);
-}
-
 .cart-button {
   border: 1px solid var(--border);
   background: #ffffff;
