@@ -698,32 +698,6 @@ function Storefront() {
       {/* Scroll Progress Bar */}
       <div className="fixed top-0 left-0 h-[3px] bg-gradient-to-r from-[#e65416] to-[#f18a5d] z-[100] transition-[width] duration-75 ease-out" style={{ width: `${scrollProgress}%` }} />
 
-      {/* Top Announcement Bar */}
-      <div className="hidden md:block min-h-[38px] bg-[#303236] text-[#f5f5f2] font-mono text-[11px] tracking-[.03em] relative z-40 py-1.5">
-        <div className="w-full max-w-[1220px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 xl:gap-6">
-          <div className="flex min-w-0 items-center gap-2.5 whitespace-nowrap">
-            <Icon name="spark" size={14} className="text-[#e65416]" />
-            <span>Marketplace aset digital untuk ide kreatif</span>
-            <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[rgba(230,84,22,0.22)] px-2 py-0.5 text-[10px] text-[#fca882]">
-              Template · Poster · Materi belajar
-            </span>
-          </div>
-          <div className="flex shrink-0 items-center gap-2.5 whitespace-nowrap">
-            <button
-              type="button"
-              onClick={toggleSound}
-              aria-label="Nyalakan atau matikan efek suara"
-              title="Toggle efek suara retro"
-              className="bg-transparent border border-white/20 text-[#d1d0c9] rounded-full px-2.5 py-0.5 text-[10px] cursor-pointer inline-flex items-center gap-1 transition-all hover:bg-white/10 hover:text-white hover:border-white/40"
-            >
-              <Icon name={soundEnabled ? 'volume' : 'volume-mute'} size={12} />
-              <span>Suara: {soundEnabled ? 'ON' : 'OFF'}</span>
-            </button>
-            <span className="hidden xl:inline">Karya digital dari kreator Indonesia</span>
-          </div>
-        </div>
-      </div>
-
       {/* Main Site Header */}
       <header className={`${isScrolled ? "h-16 bg-[rgba(245,245,242,0.94)] backdrop-blur-md shadow-[0_4px_20px_-8px_rgba(48,50,54,0.08)]" : "h-[74px] bg-[#f5f5f2]"} border-b border-[#deddd6] sticky top-0 z-[45] transition-all duration-250 ease-in-out`}>
         <div className="w-full max-w-[1220px] mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4 sm:gap-6">
