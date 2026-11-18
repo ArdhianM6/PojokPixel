@@ -300,19 +300,6 @@ export function HomePage({
                 </button>
               </div>
 
-              {/* Team Proof with EXACT 3 MEMBERS */}
-              <div className="hero-proof">
-                <div className="avatar-stack">
-                  <span title="Ardhian Maulana Tanjung">AM</span>
-                  <span title="Aulia Ryansifa Wardah">AR</span>
-                  <span title="Khoirunnisa Salsabila Osmon">KS</span>
-                </div>
-                <span>
-                  Dibuat & dikurasi oleh tim <strong>Ardhian, Aulia, & Khoirunnisa</strong>
-                </span>
-                <span className="proof-line" />
-                <span>Indonesia</span>
-              </div>
             </div>
 
             <div className="hero-art-perspective motion-safe:animate-panel-in">
