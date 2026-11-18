@@ -721,6 +721,17 @@ function Storefront() {
               Katalog
             </a>
             <a
+              className={currentPath.startsWith('/favorit') ? 'active' : ''}
+              href="/favorit"
+              onClick={(e) => {
+                e.preventDefault()
+                playSound('click')
+                navigate('/favorit')
+              }}
+            >
+              Favorit
+            </a>
+            <a
               className={currentPath.startsWith('/riwayat') ? 'active' : ''}
               href="/riwayat"
               onClick={(e) => {
@@ -835,6 +846,19 @@ function Storefront() {
                 <Icon name="search" size={18} />
               </button>
             </div>
+
+            <button
+              type="button"
+              className={`icon-button favorite-nav-button ${currentPath.startsWith('/favorit') ? 'is-active' : ''}`}
+              aria-label={`Produk favorit${favorites.length ? `, ${favorites.length} produk` : ''}`}
+              onClick={() => {
+                playSound('click')
+                navigate('/favorit')
+              }}
+            >
+              <Icon name="heart" size={18} />
+              {favorites.length > 0 && <span className="favorite-nav-count">{favorites.length}</span>}
+            </button>
 
             {!isPending &&
               (session?.user ? (
@@ -1156,9 +1180,9 @@ function Storefront() {
 
       {/* Main Page Content Body */}
       <main id="main-content">
-        {currentPath === '/katalog' ? (
+        {currentPath === '/katalog' || currentPath === '/favorit' ? (
           <CatalogPage
-            initialCategory={initialCat}
+            initialCategory={currentPath === '/favorit' ? 'Favorit Saya' : initialCat}
             initialQuery={initialQ}
             onQuickView={(p) => setQuickViewProduct(p)}
             onAddToCart={addToCart}

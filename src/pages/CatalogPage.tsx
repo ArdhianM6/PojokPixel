@@ -360,20 +360,27 @@ export function CatalogPage({
             <div className="text-center py-16" role="status" aria-live="polite">
               <div className="text-4xl mb-3">🔍</div>
               <h3 className="font-[family-name:var(--font-display)] text-lg font-bold text-[#303236] mb-2">
-                Produk tidak ditemukan
+                {category === 'Favorit Saya' && !debouncedQuery ? 'Belum ada produk favorit' : 'Produk tidak ditemukan'}
               </h3>
               <p className="text-sm text-[#72736c] mb-4">
-                {debouncedQuery
+                {category === 'Favorit Saya' && !debouncedQuery
+                  ? <>Tekan ikon hati pada produk yang kamu suka. Produk itu akan muncul di sini.</>
+                  : debouncedQuery
                   ? <>Tidak ada produk yang cocok dengan &quot;<strong>{debouncedQuery}</strong>&quot;. Coba kata kunci lain atau reset filter.</>
                   : <>Belum ada produk untuk kategori ini.</>
                 }
               </p>
               <button
                 type="button"
-                onClick={() => { setCategory('Semua'); setQuery(''); setDebouncedQuery('') }}
+                onClick={() => {
+                  setQuery('')
+                  setDebouncedQuery('')
+                  if (category === 'Favorit Saya') navigate('/katalog')
+                  else setCategory('Semua')
+                }}
                 className="inline-flex items-center h-10 px-5 rounded-full bg-[#303236] text-white text-sm font-semibold hover:bg-[#e65416] transition"
               >
-                Reset Semua Filter
+                {category === 'Favorit Saya' ? 'Jelajahi katalog' : 'Reset Semua Filter'}
               </button>
             </div>
           )}
