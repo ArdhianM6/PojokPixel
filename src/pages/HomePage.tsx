@@ -7,7 +7,7 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 interface HomePageProps {
   onQuickView: (p: Product) => void
-  onAddToCart: (p: Product) => void
+  onAddToCart: (p: Product, sourceCard?: HTMLElement | null) => void
   onToggleFavorite: (id: string) => void
   favorites: string[]
   playSound: (type: 'click' | 'pop' | 'success' | 'delete') => void
@@ -236,10 +236,13 @@ export function HomePage({
             type="button"
             className="product-buy-btn"
             aria-label={`Tambah ${p.name} ke keranjang`}
-            onClick={() => onAddToCart(p)}
+            onClick={(event) => onAddToCart(p, event.currentTarget.closest<HTMLElement>('.product-card'))}
             title="Tambah ke keranjang"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+              <path d="M2 3h2l2.3 11.4a2 2 0 0 0 2 1.6h9.6a2 2 0 0 0 1.9-1.5L22 8H5"/>
+            </svg>
           </button>
         </div>
       </div>

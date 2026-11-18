@@ -2298,6 +2298,36 @@ button {
   transform: translateY(-2px);
 }
 
+.product-buy-btn.is-adding {
+  animation: product-cart-tap 420ms cubic-bezier(.2, .8, .25, 1);
+}
+
+.cart-flyer {
+  position: fixed !important;
+  z-index: 120;
+  margin: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 14px 38px rgba(48, 50, 54, .24);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.favorites-empty-cta {
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+}
+
+@keyframes product-cart-tap {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(.88); }
+  75% { transform: scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-buy-btn.is-adding { animation: none; }
+}
+
 .empty-state {
   padding: 56px 0;
   text-align: center;

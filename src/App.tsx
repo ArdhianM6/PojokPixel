@@ -363,7 +363,7 @@ function Storefront() {
   const discountAmount = useMemo(() => (couponApplied ? Math.round(cartSubtotal * 0.15) : 0), [cartSubtotal, couponApplied])
   const finalTotal = useMemo(() => Math.max(0, cartSubtotal - discountAmount), [cartSubtotal, discountAmount])
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, sourceCard?: HTMLElement | null) => {
     if (isPending) {
       notify('Sesi akun sedang diperiksa. Coba lagi sebentar.')
       return
@@ -373,6 +373,42 @@ function Storefront() {
       notify('Masuk ke akun terlebih dahulu untuk menambahkan produk ke keranjang.')
       return
     }
+
+    if (sourceCard && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const sourceImage = sourceCard.querySelector<HTMLElement>('.product-image')
+      const cartTarget = document.querySelector<HTMLElement>('.cart-button')
+      const sourceRect = sourceImage?.getBoundingClientRect()
+      const targetRect = cartTarget?.getBoundingClientRect()
+
+      if (sourceImage && sourceRect && targetRect && sourceRect.width > 0 && targetRect.width > 0) {
+        const flyer = sourceImage.cloneNode(false) as HTMLElement
+        flyer.classList.add('cart-flyer')
+        flyer.setAttribute('aria-hidden', 'true')
+        Object.assign(flyer.style, {
+          left: `${sourceRect.left}px`,
+          top: `${sourceRect.top}px`,
+          width: `${sourceRect.width}px`,
+          height: `${sourceRect.height}px`,
+        })
+        document.body.appendChild(flyer)
+
+        const translateX = targetRect.left + targetRect.width / 2 - (sourceRect.left + sourceRect.width / 2)
+        const translateY = targetRect.top + targetRect.height / 2 - (sourceRect.top + sourceRect.height / 2)
+        const animation = flyer.animate(
+          [
+            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+            { transform: `translate(${translateX}px, ${translateY}px) scale(.12)`, opacity: .28 },
+          ],
+          { duration: 650, easing: 'cubic-bezier(.2, .72, .25, 1)', fill: 'forwards' },
+        )
+        animation.onfinish = () => flyer.remove()
+
+        const buyButton = sourceCard.querySelector<HTMLElement>('.product-buy-btn')
+        buyButton?.classList.add('is-adding')
+        window.setTimeout(() => buyButton?.classList.remove('is-adding'), 420)
+      }
+    }
+
     playSound('pop')
     setCartItems((prev) => {
       const idx = prev.findIndex((item) => item.product.id === product.id)
