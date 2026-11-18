@@ -380,7 +380,8 @@ function Storefront() {
       const sourceRect = sourceImage?.getBoundingClientRect()
       const targetRect = cartTarget?.getBoundingClientRect()
 
-      if (sourceImage && sourceRect && targetRect && sourceRect.width > 0 && targetRect.width > 0) {
+      if (sourceImage && cartTarget && sourceRect && targetRect && sourceRect.width > 0 && targetRect.width > 0) {
+        const receivingCartTarget = cartTarget
         const flyer = sourceImage.cloneNode(false) as HTMLElement
         flyer.classList.add('cart-flyer')
         flyer.setAttribute('aria-hidden', 'true')
@@ -394,14 +395,31 @@ function Storefront() {
 
         const translateX = targetRect.left + targetRect.width / 2 - (sourceRect.left + sourceRect.width / 2)
         const translateY = targetRect.top + targetRect.height / 2 - (sourceRect.top + sourceRect.height / 2)
+        const arc = Math.min(92, Math.max(38, Math.abs(translateX) * .13))
         const animation = flyer.animate(
           [
-            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-            { transform: `translate(${translateX}px, ${translateY}px) scale(.12)`, opacity: .28 },
+            { transform: 'translate(0, 0) scale(1) rotate(0deg)', opacity: 1, offset: 0 },
+            {
+              transform: `translate(${translateX * .24}px, ${translateY * .28 - arc}px) scale(.82) rotate(-7deg)`,
+              opacity: 1,
+              offset: .34,
+            },
+            {
+              transform: `translate(${translateX * .76}px, ${translateY * .78 - arc * .28}px) scale(.42) rotate(5deg)`,
+              opacity: .82,
+              offset: .72,
+            },
+            { transform: `translate(${translateX}px, ${translateY}px) scale(.12) rotate(10deg)`, opacity: .18, offset: 1 },
           ],
-          { duration: 650, easing: 'cubic-bezier(.2, .72, .25, 1)', fill: 'forwards' },
+          { duration: 780, easing: 'cubic-bezier(.22, .72, .18, 1)', fill: 'forwards' },
         )
-        animation.onfinish = () => flyer.remove()
+        animation.onfinish = () => {
+          flyer.remove()
+          receivingCartTarget.classList.remove('is-receiving')
+          void receivingCartTarget.offsetWidth
+          receivingCartTarget.classList.add('is-receiving')
+          window.setTimeout(() => receivingCartTarget.classList.remove('is-receiving'), 520)
+        }
 
         const buyButton = sourceCard.querySelector<HTMLElement>('.product-buy-btn')
         buyButton?.classList.add('is-adding')

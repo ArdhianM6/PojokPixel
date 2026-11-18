@@ -2281,9 +2281,10 @@ button {
   z-index: 120;
   margin: 0 !important;
   border-radius: 12px !important;
-  box-shadow: 0 14px 38px rgba(48, 50, 54, .24);
+  border: 2px solid rgba(255, 255, 255, .9);
+  box-shadow: 0 16px 42px rgba(48, 50, 54, .28), 0 0 0 1px rgba(230, 84, 22, .16);
   pointer-events: none;
-  will-change: transform, opacity;
+  will-change: transform, opacity, filter;
 }
 
 .favorites-empty-cta {
@@ -2294,8 +2295,22 @@ button {
 
 @keyframes product-cart-tap {
   0%, 100% { transform: scale(1); }
-  45% { transform: scale(.88); }
-  75% { transform: scale(1.08); }
+  28% { transform: scale(.9); }
+  62% { transform: scale(1.04); }
+}
+
+.cart-button.is-receiving {
+  animation: cart-arrival 480ms cubic-bezier(.2, .8, .25, 1);
+  border-color: var(--orange);
+}
+
+@keyframes cart-arrival {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-button.is-receiving { animation: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
