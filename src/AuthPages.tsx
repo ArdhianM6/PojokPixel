@@ -130,7 +130,7 @@ function SocialButtons({ onError, busy, setBusy }: { onError: (message: string) 
         provider,
         callbackURL: `${window.location.origin}/auth/continue?login=1`,
         newUserCallbackURL: `${window.location.origin}/auth/continue?new=1`,
-        errorCallbackURL: `${window.location.origin}/login?oauthError=1`,
+        errorCallbackURL: `${window.location.origin}/`,
       })
       if (result.error) { onError(result.error.message || `Login ${provider} belum dapat dimulai.`); setBusy(false) }
     } catch { onError(`Tidak dapat terhubung ke API untuk login ${provider}.`); setBusy(false) }

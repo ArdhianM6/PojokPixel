@@ -7620,6 +7620,22 @@ button {
   }
 }
 
+@media (max-width: 520px) {
+  .marketplace-hero-search {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .hero-search-input {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: none;
+    text-align: center;
+  }
+}
+
 /* Creator gallery uploads and product detail gallery */
 .creator-gallery-editor {
   display: grid;
